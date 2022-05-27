@@ -1,0 +1,250 @@
+<!doctype html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+	</head>
+	<body class="bitmap">
+		<div class="wrapper">
+			<table>
+				<tr>
+					<td class="header">
+						<table>
+							<tr>
+								<td class="logo-wrap">
+									<img class="logo" src="img/logo.jpg" />
+								</td>
+								<td>
+									<h1 class='page-title'>Bitmap - Profinet Input</h1>
+								</td>
+								<td>
+									<a id="close" class="btn btn-yellow" href="index.shtm"><</a>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td class="docbody">
+						<table style="min-height:20px;min-width:10px;height:30px;margin-top:2px" class="datatable">
+							<tr>
+								<td class="bmshead">
+									<a class="bms" href="/bitmap.shtm">Input Byte</a>
+								</td>
+								<td class="bmshead">
+									<a class="bms" href="/bitmap_output.shtm">Output Byte</a>
+								</td>
+							</tr>
+						</table>
+						<table  style="min-height:20px;min-width:10px;" class="datatable">
+
+							<tr class="odd">
+								<td class="micro">
+									0
+								</td>
+								<td class="color flow">
+									<div id="flow"></div>
+								</td>
+								<td>
+									Flow OK
+								</td>
+								<td>
+									Bit on when Flow is OK
+								</td>
+							</tr>
+
+							<tr class="even">
+								<td class="micro">
+									1
+								</td>
+								<td class="color valve">
+									<div id="valve"></div>
+								</td>
+								<td>
+									Valve
+								</td>
+								<td>
+									Bit on when valve is closed.
+								</td>
+							</tr>
+
+							<tr class="odd">
+								<td class="micro">
+									2
+								</td>
+								<td class="color bypass">
+									<div id="bypass"></div>
+								</td>
+								<td>
+									Bypass
+								</td>
+								<td>
+									Bit on when unit is in bypass.
+								</td>
+							</tr>
+
+							<tr class="even">
+								<td class="micro">
+									3
+								</td>
+								<td class="color minflow">
+									<div id="minflow"></div>
+								</td>
+								<td>
+									Min Flow
+								</td>
+								<td>
+									Bit on when water flow is above minimum.
+								</td>
+							</tr>
+
+							<tr class="odd">
+								<td class="micro">
+									4
+								</td>
+								<td class="color leak">
+									<div id="leak"></div>
+								</td>
+								<td>
+									Leak
+								</td>
+								<td>
+									Bit on when cap loss detected.
+								</td>
+							</tr>
+
+							<tr class="even">
+								<td class="micro">
+									5
+								</td>
+								<td class="color reserved">
+									<div id="reserved"></div>
+								</td>
+								<td>
+									Low Temp
+								</td>
+								<td>
+									Bit on when the temperature is below the low temp setpoint.
+								</td>
+							</tr>
+
+							<tr class="odd">
+								<td class="micro">
+									6
+								</td>
+								<td class="color temp">
+									<div id="temp"></div>
+								</td>
+								<td>
+									High Temp
+								</td>
+								<td>
+									Bit on when water temp greater than the high temp setpoint.
+								</td>
+							</tr>
+
+							<tr class="even">
+								<td class="micro">
+									7
+								</td>
+								<td class="color powerOk">
+									<div id="powerOk"></div>
+								</td>
+								<td>
+									Bypass Request
+								</td>
+								<td>
+									Bit on when bypass request is made from the device.
+								</td>
+							</tr>
+
+						</table>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<script type="text/javascript" src="/js/functions.js"></script>
+		<script type="text/javascript">
+
+			var inputByte = <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,1,1,5,0,0,NONE,UINT8 ) )'-->;
+			var json_var = new XMLHttpRequest();
+
+			function updateBitmap() {
+
+				json_var.open('GET', 'vars/inputbyte.shtm');
+				json_var.timeout = 950;
+				json_var.ontimeout = function () {
+					json_var.abort();
+				}
+				json_var.onreadystatechange = function() {
+
+					if (json_var.readyState==4 && json_var.status==200) {
+						inputByte = json_var.responseText;
+						json_var.abort();
+					}
+				}
+
+				json_var.send();
+
+				var flow = 'red';
+				var valve = 'red';
+				var bypass = 'red';
+				var minflow = 'red';
+				var leak = 'red';
+				var temp = 'red';
+				var powerOk = 'red';
+				var reserved = 'red';
+
+
+				if(bit_test(inputByte, 0)) {
+					flow = 'green';
+				}
+
+				if(bit_test(inputByte, 1)) {
+					valve = 'green';
+				}
+
+				if(bit_test(inputByte, 2)) {
+					bypass = 'green';
+				}
+
+				if(bit_test(inputByte, 3)) {
+					minflow = 'green';
+				}
+
+				if(bit_test(inputByte,4)) {
+					leak = 'green';
+				}
+
+				if(bit_test(inputByte,5)) {
+					reserved = 'green';
+				}
+
+				if(bit_test(inputByte, 6)) {
+					temp = 'green';
+				}
+
+				if(bit_test(inputByte, 7)) {
+					powerOk = 'green';
+				}
+
+				//document.getElementById('inputByte').innerHTML = decbin(inputByte,8);
+				//document.getElementById('outputByte').innerHTML = decbin(outputByte,8);
+
+
+				document.getElementById('flow').innerHTML = '<div style="min-height:20px;min-width:10px;background:' + flow + '; width:100%;height:100%;display:block;"></div>';
+				document.getElementById('valve').innerHTML = '<div style="min-height:20px;min-width:10px;background:' + valve + '; width:100%;height:100%;display:block;"></div>';
+				document.getElementById('bypass').innerHTML = '<div style="min-height:20px;min-width:10px;background:' + bypass + '; width:100%;height:100%;display:block;"></div>';
+				document.getElementById('minflow').innerHTML = '<div style="min-height:20px;min-width:10px;background:' + minflow + '; width:100%;height:100%;display:block;"></div>';
+				document.getElementById('leak').innerHTML = '<div style="min-height:20px;min-width:10px;background:' + leak + '; width:100%;height:100%;display:block;"></div>';
+				document.getElementById('temp').innerHTML = '<div style="min-height:20px;min-width:10px;background:' + temp + '; width:100%;height:100%;display:block;"></div>';
+				document.getElementById('powerOk').innerHTML = '<div style="min-height:20px;min-width:10px;background:' + powerOk + '; width:100%;height:100%;display:block;"></div>';
+				document.getElementById('reserved').innerHTML = '<div style="min-height:20px;min-width:10px;background:' + reserved + '; width:100%;height:100%;display:block;"></div>';
+
+			}
+
+			var looper = setInterval(function() {
+				updateBitmap();
+			}, 1200);
+		</script>
+	</body>
+</html>

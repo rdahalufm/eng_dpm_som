@@ -1,0 +1,217 @@
+<!doctype html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+	</head>
+	<body class="bitmap">
+		<div class="wrapper">
+			<table>
+				<tr>
+					<td class="header">
+						<table>
+							<tr>
+								<td class="logo-wrap">
+									<img class="logo" src="img/logo.jpg" />
+								</td>
+								<td>
+									<h1 class='page-title'>Bitmap - Profinet Output</h1>
+								</td>
+								<td>
+									<a id="close" class="btn btn-yellow" href="index.shtm"><</a>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td class="docbody">
+						<table style="min-height:20px;min-width:10px;height:30px;margin-top:2px" class="datatable">
+							<tr>
+								<td class="bmshead">
+									<a class="bms" href="/bitmap.shtm">Input Byte</a>
+								</td>
+								<td class="bmshead">
+									<a class="bms" href="/bitmap_output.shtm">Output Byte</a>
+								</td>
+							</tr>
+						</table>
+						<table  style="min-height:20px;min-width:10px;" class="datatable">
+
+							<tr class="odd">
+								<td class="micro">
+									0
+								</td>
+								<td class="color flow">
+									<div id="reset"></div>
+								</td>
+								<td>
+									Reset
+								</td>
+								<td>
+									On when reset command sent
+								</td>
+							</tr>
+
+							<tr class="even">
+								<td class="micro">
+									1
+								</td>
+								<td class="color valve">
+									<div id="shutoff"></div>
+								</td>
+								<td>
+									Shut-off
+								</td>
+								<td>
+									On when shut-off sent
+								</td>
+							</tr>
+
+							<tr class="odd">
+								<td class="micro">
+									2
+								</td>
+								<td class="color bypass">
+									<div id="bypass"></div>
+								</td>
+								<td>
+									Bypass
+								</td>
+								<td>
+									On when bypass sent
+								</td>
+							</tr>
+
+							<tr class="even">
+								<td class="micro">
+									3
+								</td>
+								<td class="color">&nbsp;</td>
+								<td>
+									
+								</td>
+								<td>
+									Bit not used (off)
+								</td>
+							</tr>
+
+							<tr class="odd">
+								<td class="micro">
+									4
+								</td>
+								<td class="color">&nbsp;</td>
+								<td>
+									
+								</td>
+								<td>
+									Bit not used (off)
+								</td>
+							</tr>
+
+							<tr class="even">
+								<td class="micro">
+									5
+								</td>
+								<td class="color">&nbsp;</td>
+								<td>
+									
+								</td>
+								<td>
+									Bit not used (off).
+								</td>
+							</tr>
+
+							<tr class="odd">
+								<td class="micro">
+									6
+								</td>								
+								<td class="color">&nbsp;</td>
+								<td>
+									
+								</td>
+								<td>
+									Bit not used (off)
+								</td>
+							</tr>
+
+							<tr class="even">
+								<td class="micro">
+									7
+								</td>
+								<td class="color">&nbsp;</td>
+								<td>
+									
+								</td>
+								<td>
+									Bit not used (off)
+								</td>
+							</tr>
+
+						</table>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<script type="text/javascript" src="/js/functions.js"></script>
+		<script type="text/javascript">
+
+			var outputByte = <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,5,1,5,0,0,NONE,UINT8 ) )'-->;
+			var output_var = new XMLHttpRequest();
+
+			//document.getElementById('inputByte').innerHTML = decbin(inputByte,8);
+			//document.getElementById('outputByte').innerHTML = decbin(outputByte,8);
+
+
+			
+			function updateBitmap() {
+				
+				output_var.open('GET', 'vars/outputbyte.shtm');
+				output_var.timeout = 950;
+				output_var.ontimeout = function () { 
+					output_var.abort();
+				}
+				output_var.onreadystatechange = function() {
+
+					if (output_var.readyState==4 && output_var.status==200) {
+						outputByte = output_var.responseText;
+						output_var.abort();
+					}
+				}
+
+				output_var.send();
+
+				var reset = 'red';
+				var shutoff = 'red';
+				var bypass = 'red';
+				
+				
+				if(bit_test(outputByte, 0)) {
+					reset = 'green';
+				}
+
+				if(bit_test(outputByte, 1)) {
+					shutoff = 'green';
+				}
+				
+				if(bit_test(outputByte, 2)) {
+					bypass = 'green';
+				}
+				
+			
+				//document.getElementById('inputByte').innerHTML = decbin(inputByte,8);
+				//document.getElementById('outputByte').innerHTML = decbin(outputByte,8);
+				
+
+				document.getElementById('reset').innerHTML = '<div style="min-height:20px;min-width:10px;max-width:20px;background:' + reset + '; width:100%;height:100%;display:block;"></div>';
+				document.getElementById('shutoff').innerHTML = '<div style="min-height:20px;min-width:10px;max-width:20px;background:' + shutoff + '; width:100%;height:100%;display:block;"></div>';
+				document.getElementById('bypass').innerHTML = '<div style="min-height:20px;min-width:10px;max-width:20px;background:' + bypass + '; width:100%;height:100%;display:block;"></div>';
+				
+			}
+			
+			
+			var looper = setInterval(function() {
+				updateBitmap();
+			}, 1200);
+		</script>
+	</body>
+</html>

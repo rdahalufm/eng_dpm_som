@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+	<head>
+		<title>ROCON DeltaPoint</title>
+		<style>
+		.visible {
+			
+		}
+		#loading p {
+			padding:30px;
+		}
+		.hidden {
+			display: none;
+		}
+		#loading {
+			width: 100%;
+			height:100%;
+		}
+		#loading #bar {
+			text-align: center;
+			font-size:16px;
+			color:#fff;
+		}
+		#loading h1 {
+			color : #fff;
+			font-size:30px;
+			text-align: center;
+		}
+		</style>
+		<link rel="stylesheet" type="text/css" href="/css/style.css">
+		<script type="text/javascript" src="/js/json3.min.js"></script>
+	</head>
+	<body class="home">
+
+		<!--#if expr="$QUERY_STRING = /units=([a-zA-Z0-9]+)/" -->
+			<div class="webstatus units"><?--#exec cmd_argument='scanf("units", "%u", ABCCMessage(254,12,2,5,0,ARG,UINT8,NONE) )'--></div>
+		<!--#endif -->
+
+		<!--#if expr="$QUERY_STRING = /minFlow=([a-zA-Z0-9]+)/" -->
+			<div class="webstatus minFlow"><?--#exec cmd_argument='scanf("minFlow", "%u", ABCCMessage(254,7,2,5,0,ARG,UINT16,NONE) )'--></div>
+		<!--#endif -->
+
+		<!--#if expr="$QUERY_STRING = /flowOk=([a-zA-Z0-9]+)/" -->
+			<div class="webstatus flowOk"><?--#exec cmd_argument='scanf("flowOk", "%u", ABCCMessage(254,8,2,5,0,ARG,UINT16,NONE ) )'--></div>
+		<!--#endif -->
+
+		<!--#if expr="$QUERY_STRING = /leakRate=([a-zA-Z0-9]+)/" -->
+			<div class="webstatus leakRate"><?--#exec cmd_argument='scanf("leakRate", "%u", ABCCMessage(254,9,2,5,0,ARG,UINT16,NONE ) ) )'--></div>
+		<!--#endif -->
+
+		<!--#if expr="$QUERY_STRING = /overTemp=([a-zA-Z0-9]+)/" -->
+			<div class="webstatus overTemp"><?--#exec cmd_argument='scanf("overTemp", "%u", ABCCMessage(254,10,2,5,0,ARG,UINT16,NONE ) )'--></div>
+		<!--#endif -->
+
+        <!--#if expr="$QUERY_STRING = /underTemp=([a-zA-Z0-9]+)/" -->
+			<div class="webstatus underTemp"><?--#exec cmd_argument='scanf("underTemp", "%u", ABCCMessage(254,6,2,5,0,ARG,UINT16,NONE ) )'--></div>
+		<!--#endif -->
+		
+		<!--#if expr="$QUERY_STRING = /venturiTimer=([a-zA-Z0-9]+)/" -->
+			<div class="webstatus venturiTimer"><?--#exec cmd_argument='scanf("venturiTimer", "%u", ABCCMessage(254,23,2,5,0,ARG,UINT16,NONE ) )'--></div>
+		<!--#endif -->
+
+		<!--#if expr="$QUERY_STRING = /responseTime=([a-zA-Z0-9]+)/" -->
+			<div class="webstatus responseTime"><?--#exec cmd_argument='scanf("responseTime", "%u", ABCCMessage(254,11,2,5,0,ARG,UINT8,NONE ) )'--></div>
+		<!--#endif -->
+
+		<!--#if expr="$QUERY_STRING = /restartDelay=([a-zA-Z0-9]+)/" -->
+			<div class="webstatus restartDelay"><?--#exec cmd_argument='scanf("restartDelay", "%u", ABCCMessage(254,16,2,5,0,ARG,UINT16,NONE ) )'--></div>
+		<!--#endif -->
+
+		<!--#if expr="$QUERY_STRING = /webStatus=([a-zA-Z0-9]+)/" -->
+			<div class="webstatus"><?--#exec cmd_argument='scanf("webStatus", "%u", ABCCMessage(254,13,2,5,0,ARG,UINT16,NONE ) )'--></div>
+		<!--#endif -->
+	<script type="text/javascript">
+		window.location.href = "/settings.shtm";
+	</script>
+	</body>
+</html>

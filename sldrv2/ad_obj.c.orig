@@ -1,0 +1,1399 @@
+/*******************************************************************************
+********************************************************************************
+**
+** File Name
+** ---------
+**
+** ad_obj.c
+**
+********************************************************************************
+********************************************************************************
+**
+** Description
+** -----------
+** Source file containing a minimalistic Anybus-CC application example.
+**
+** Application Data Object 0xFE (ADI) - Implementation file
+**
+********************************************************************************
+********************************************************************************
+**                                                                            **
+** User Information 2012 HMS Industrial Networks AB.                          **
+**                                                                            **
+** This program is the property of HMS Industrial Networks AB.                **
+** It has been designed to be used and modified without permission from       **
+** HMS Industrial Networks AB in any application using an Anybus CompactCom   **
+** module.                                                                    **
+** We, HMS Industrial Networks AB, reserve the right to modify our products   **
+** in line with our policy of continuous product development. The information **
+** in this program is subject to updates without notice and should not be     **
+** considered as a commitment by HMS Industrial Networks AB.                  **
+** HMS Industrial Networks AB assumes no responsibility for any errors that   **
+** may appear in this program.                                                **
+**                                                                            **
+********************************************************************************
+********************************************************************************
+**
+** Company: HMS Industrial Networks AB
+**          Stationsgatan 37
+**          SE-302 45  Halmstad
+**          SWEDEN
+**          Tel:     +46 (0)35 - 17 29 00
+**          Fax:     +46 (0)35 - 17 29 09
+**          e-mail:  info@hms.se
+**
+********************************************************************************
+********************************************************************************
+*/
+
+/*******************************************************************************
+********************************************************************************
+**
+** Change Log
+** ----------
+** modified on 4/17/12
+** lines 116-120 243-247 309 328 modified to match demo pdf ADIs // v.2 changed the indexes on line 309/328 to do 3x write 5x read, no errors seems to be needed to set read and write access to these locations(numbers match)
+**
+** Latest modification:
+** --------------------
+** $Modtime: 2012-01-20 12:00:00+02:00 $
+**
+** Version history:
+**
+**    Ver 1.00     2012-01-20  MSv   First version
+**
+**
+********************************************************************************
+********************************************************************************
+*/
+
+
+#include "anybus.h"
+#include "abp.h"
+#include "ad_obj.h"
+#include <string.h>
+#include "../DPIIv2.h"
+/*******************************************************************************
+**
+** Public Globals
+**
+********************************************************************************
+*/
+extern UINT16 MinFlow,FlowOK,LeakRate,OverTemp,ResponseTime;
+extern BYTE Units;
+extern FLAGbits Flag1bits;
+/*------------------------------------------------------------------------------
+** AD_iNumOfADIs                 - Number of ADIs managed by AD (Updated automatically)
+** AD_iHighestInstanceNumber     - Highest ADI instance number Updated automatically)
+** AD_fHasPdReadDataLimitError   - TRUE: An limit violation (max/min) error exists for an read procedd data variable
+**                                 FALSE: No limit error (max/min) exists
+** AD_paiPdWriteMap              - Points to current write process data mapping list, setup in AD_Init()
+**                                 if NULL: No mappings
+** AD_paiPdReadMap               - Points to current read process data mapping list, setup in AD_Init()
+**                                 if NULL: No mappings
+**------------------------------------------------------------------------------
+*/
+
+UINT16   AD_iNumOfADIs;
+UINT16   AD_iHighestInstanceNumber;
+BOOL8    AD_fHasPdReadDataLimitError;
+UINT16*  AD_paiPdWriteMap  = NULL;
+UINT16*  AD_paiPdReadMap   = NULL;
+
+/*------------------------------------------------------------------------------
+** User declared ADI value data holders
+** !!! PORTING ALART !!!!
+** This is just example declarations and can be data linked to any code part
+**------------------------------------------------------------------------------
+*/
+
+struct
+{
+//Inputs based on DeltaPoint Manifold IO Table
+    UINT8  iADI1Value;
+    UINT8  iADI2Value;
+    UINT8  iADI3Value;
+    UINT8  iADI4Value;
+
+//Outputs
+    UINT16  iADI5Value;
+
+//Web Values
+    UINT16 iADI6Value; // display value
+    UINT16 iADI7Value; //min flow
+    UINT16 iADI8Value;//flow ok
+    UINT16 iADI9Value;//leak rate
+    UINT16 iADI10Value;//overtemp
+    UINT8  iADI11Value;//response time
+    UINT8  iADI12Value;//units
+    UINT16 iADI13Value;//web status
+    UINT16 iADI14Value;//firmware Rev
+    UINT32 iADI15Value;//serial Number
+    UINT16 iADI16Value;//Restart Time
+    UINT16 iADI17Value;//Website Supply
+    UINT16 iADI18Value;//website Return
+    UINT16 iADI19Value;//EIP Status Word
+    UINT16 iADI20Value;//EIP Command Word
+
+    UINT8 iADI21Value[4];//IPAddressLocal
+    UINT8 iADI22Value[4];//SMaskLocal
+
+} AD_sADIValues;
+
+
+/*-------------------------------------------------------------------------------------------------------
+** ADI ENUM strings allocations
+** Note: Optional, to be used in ADI properties allocations for ENUM if enum strings wants to be used.
+**
+** 1. eValue            - Enum value
+** 2. abEnumStr         - Cooresponding enum string value
+**-------------------------------------------------------------------------------------------------------
+** 1. eValue   |  2. xMinabEnumStrValue
+**-------------------------------------------------------------------------------------------------------
+*/
+
+AD_ENUMStrType ad_ENUMPropsString[] = { { 0, "Process OK" },
+                                        { 1, "Process failed: Water level to high" },
+                                        { 2, "Process failed: Valve 1 open problem" }
+                                      };
+
+
+/*-------------------------------------------------------------------------------------------------------
+** ADI value properties allocation (optional)
+** Note: Optional, if defined the cooresponding entry can be used for ADI instance allocations
+**       in psValueProps in AD_asADIEntryList definition below.
+**
+** 1. xMinValue         - Minumum value allowed
+** 2. xMaxValue         - Maximum value allowed
+** 3. xDefaultValue     - Default value
+** Note: The two fileds below only applies for AD_ENUMType type
+** 4. bNumOfEnumStrings - Number of enum string entries in (5) below
+** 5. psEnumStrings     - Pointer to array of AD_ENUMStrType defining enum value and coorespoinding string.
+**-------------------------------------------------------------------------------------------------------
+** 1. xMaxValue   |  2. xMinValue   |  3. xDefaultValue |   ( 4. bNumOfEnumStrings  |  5. psEnumStrings )
+**-------------------------------------------------------------------------------------------------------
+*/
+
+AD_BOOL8Type   ad_BOOL8Props_0_1_0             = { 0, 1, 0 };
+AD_SINT8Type   ad_SINT8Props_n100_100_0        = { -100, 100, 0};
+AD_UINT8Type   ad_UINT8Props_0_255_0           = { 0,  255, 0 };
+AD_SINT16Type  ad_SINT16Props_n32760_32760_0   = { -32760, 32760, 0 };
+AD_UINT16Type  ad_UINT16Props_0_65535_0        = { 0, 65535, 0 };
+AD_SINT32Type  ad_SINT32Props_n900K_900K_0     = { -900000, 900000, 0 };
+AD_UINT32Type  ad_UINT32Props_0_0xFFFFFFFF_0   = { 0, 0xFFFFFFFF, 0 };
+AD_FLOAT32Type ad_FLOAT32Props_n90p45_90p45_0  = { -90.45F, 90.45F, 0 };
+AD_ENUMType    ad_ENUMProps_0_2_0_3STR = { 0, 2, 0, 3, ad_ENUMPropsString };
+
+#ifdef AB_ENABLE_64BIT_ADI_SUPPORT
+AD_SINT64Type  ad_SINT64Props_n900K_900K_0            = { -900000, 900000, 0 };
+AD_UINT64Type  ad_UINT64Props_0_0xFFFFFFFFFFFFFFFE_0  = { 0, 0xFFFFFFFFFFFFFFFE, 0 };
+#endif
+
+
+/*---------------------------------------------------------------------------------------------------------------------------------
+** ADI instance allocation
+**
+** 1. iInstance               - ADI instance number (1-65535); 0 is reserved for Class
+** 2. pabName                 - Name of ADI as an character string (ADI instance attribute #1)
+**                              if NULL, an 0 length name will be returned
+** 3. bDataType               - ADI data type format, can be one of the folowing:
+**                               ABP_BOOL:    Boolean
+**                               ABP_SINT8:   8-bit signed integer
+**                               ABP_SINT16:  16-bit signed integer
+**                               ABP_SINT32:  32-bit signed integer
+**                               ABP_UINT8:   8-bit unsigned integer
+**                               ABP_UINT16:  16-bit unsigned integer
+**                               ABP_UINT32:  32-bit unsigned integer
+**                               ABP_CHAR:    character
+**                               ABP_ENUM:    Enumeration
+**                               ABP_SINT64:  64-bit signed integer
+**                               ABP_UINT64:  64-bit unsigned integer
+**                               ABP_FLOAT:   floating point value (32-bits)
+** 4. bNumOfElements          - Number of elements of the specified data type in (3)
+** 5. bDesc                   - Entry descriptor; bits filed with the folllowing configurations:
+**                               ABP_APPD_DESCR_GET_ACCESS:  Get service is allowed on value attribute
+**                               ABP_APPD_DESCR_SET_ACCESS:  Set service is allowed on value attribute
+** 6. pxValuePtr              - Pointer to local value variable
+** 6. psValueProps            - Pointer to local value properties struct, if NULL no properties are applied (max/min/default)
+**---------------------------------------------------------------------------------------------------------------------------------
+** 1. iInstance   |  2. pabName   |  3. bDataType  |  4. bNumOfElements  |  5. bDesc   |  6. { { pxValuePtr, pxValuePropPtr } }
+**---------------------------------------------------------------------------------------------------------------------------------
+*/
+
+AD_AdiEntryType AD_asADIEntryList[] =
+{
+/* Singe ADI types */
+<<<<<<< HEAD
+//INPUTS
+    /* Idx:0 ADI1: UINT8/RO/INPUT*/       { 1, "Input Byte",               ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS,                             { { &AD_sADIValues.iADI1Value, NULL } } },
+    /* Idx:1 ADI2: UINT8/RO/SUPPLY_FLOW*/ { 2, "Supply Flow",              ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS,                             { { &AD_sADIValues.iADI2Value, NULL } } },
+    /* Idx:2 ADI3: UINT8/RO/RETURN_FLOW*/ { 3, "Return Flow",              ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS,                             { { &AD_sADIValues.iADI3Value, NULL } } },
+    /* Idx:3 ADI4: UINT8/RO/TEMPERATURE*/ { 4, "Water Temperature",        ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS,                             { { &AD_sADIValues.iADI4Value, NULL } } },
+//OUTPUTS
+    /* Idx:4 ADI5: UINT16/RW/OUTPUT*/     { 5, "Output Byte",              ABP_UINT16 , 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI5Value, &ad_UINT16Props_0_65535_0 } } },
+//Website use only
+    /* Idx:5 ADI6: UINT8/RW/DISPLAY*/     { 6, "Display Value",            ABP_UINT16, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI6Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:6 ADI7: UINT16/RW/MinFlow*/     { 7, "Min Flow",                ABP_UINT16 , 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI7Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:7 ADI8: UINT16/RW/FlowOK*/      { 8, "Flow OK",                 ABP_UINT16 , 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI8Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:8 ADI9: UINT16/RW/LeakRate*/    { 9, "Leak Rate",               ABP_UINT16 , 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI9Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:9 ADI10: UINT16/RW/OverTemp*/   { 10, "Over Temp",              ABP_UINT16 , 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI10Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:10 ADI11: UINT8/RW/ResponseTime*/{ 11, "Response Time",         ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI11Value, &ad_UINT8Props_0_255_0 } } },
+    /* Idx:11 ADI12: UINT8/RW/Units*/     { 12, "Units",                   ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI12Value, &ad_UINT8Props_0_255_0 } } },
+    /* Idx:12 ADI13: UINT16/RW/WebStatusByte*/{ 13, "Web Status",          ABP_UINT16, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI13Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:13 ADI14: UINT16/RW/FirmwareRev*/{ 14, "Firmware Revision",     ABP_UINT16, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI14Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:14 ADI15: UINT32/RW/SerialNum*/{ 15, "Serial Number",           ABP_UINT32, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI15Value, &ad_UINT32Props_0_0xFFFFFFFF_0 } } },
+    /* Idx:15 ADI16: UINT16/RW/RestartTime*/{ 16, "Restart Time",          ABP_UINT16,  1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI16Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:16 ADI17: UINT16/RW/WebSupply*/{ 17, "Website Supply",          ABP_UINT16, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI17Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:17 ADI18: UINT16/RW/WebReturn*/{ 18, "Website Return",          ABP_UINT16, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI18Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:18 ADI19: UINT16/RW/EIPStatusWord*/{ 19, "EIP Status Word",     ABP_UINT16, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI19Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:19 ADI20: UINT16/RW/EIPCommandWord*/{ 20, "EIP Command Word",   ABP_UINT16, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI20Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:26 ADI27: UINT8[4]/RW/IPAddressLocal*/{ 27, "Local IP Address", ABP_UINT8,  4, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI27Value, &ad_UINT8Props_0_255_0 } } },
+    /* Idx:27 ADI28: UINT8[4]/RW/SMaskLocal*/{ 28, "Local Subnet Mask",    ABP_UINT8,  4, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI28Value, &ad_UINT8Props_0_255_0 } } },
+=======
+//Stock Inputs--Inputs from ENet Control(WS Outputs) -- 6 Bytes
+    /* Idx:0 ADI1: UINT16/RO/EIP Status*/ { 1, "EIP Status", ABP_UINT16 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI1Value, NULL } } },
+    /* Idx:1 ADI2: UINT8/RO/INPUT*/       { 2, "Input Byte", ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI2Value, NULL } } },
+    /* Idx:2 ADI3: UINT8/RO/SUPPLY_FLOW*/ { 3, "Supply Flow", ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI3Value, NULL } } },
+    /* Idx:3 ADI4: UINT8/RO/RETURN_FLOW*/ { 4, "Return Flow", ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI4Value, NULL } } },
+    /* Idx:4 ADI5: UINT8/RO/TEMPERATURE*/ { 5, "Water Temperature", ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI5Value, NULL } } },
+
+//Stock Outputs -- Outputs from ENet Control(WS Inputs) -- 4 Bytes
+    /* Idx:5 ADI6: UINT16/RW/EIP Control*/{ 6, "EIP Control", ABP_UINT16 , 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI6Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:6 ADI7: UINT16/RW/OUTPUT*/     { 7, "Output Byte", ABP_UINT16 , 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI7Value, &ad_UINT16Props_0_65535_0 } } },
+
+//Nachi Input Values -- 18 Bytes
+    /* Idx:7 ADI8: UINT8/RO/Temperature 2*/{ 8, "Temperature 2", ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI8Value, NULL } } },
+    /* Idx:8 ADI9: UINT8/RO/Temperature Delta*/{ 9, "Temperature Delta", ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI9Value, NULL } } },
+    /* Idx:9 ADI10: UINT8/RO/Units*/      { 10, "Units", ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI10Value, NULL } } },
+    /* Idx:10 ADI11: UINT16/RO/Min Flow*/ { 11, "Min Flow", ABP_UINT16 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI11Value, NULL } } },
+    /* Idx:11 ADI12: UINT16/RO/Flow OK*/  { 12, "Flow OK", ABP_UINT16 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI12Value, NULL } } },
+    /* Idx:12 ADI13: UINT16/RO/Leak Rate*/{ 13, "Leak Rate", ABP_UINT16 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI13Value, NULL } } },
+    /* Idx:13 ADI14: UINT8/RO/Over Temp*/{ 14, "Over Temp", ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI14Value, NULL } } },
+    /* Idx:14 ADI15: UINT8/RO/Response Time*/{ 15, "Response Time", ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI15Value, NULL } } },
+    /* Idx:15 ADI16: UINT8/RO/Restart Time*/{ 16, "Restart Time", ABP_UINT8 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI16Value, NULL } } },
+    /* Idx:16 ADI17: UINT8/RO/Serial Number*/{ 17, "Serial Number", ABP_UINT32 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI17Value, NULL } } },
+    /* Idx:17 ADI18: UINT8/RO/GUI Status*/{ 18, "GUI Status", ABP_UINT16 , 1, ABP_APPD_DESCR_GET_ACCESS, { { &AD_sADIValues.iADI18Value, NULL } } },
+
+//Nachi Output Values -- 12 Bytes
+    /* Idx:18 ADI19: UINT8/RW/Units*/     { 19, "Units", ABP_UINT8, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI19Value, &ad_UINT8Props_0_255_0 } } },
+    /* Idx:19 ADI20: UINT16/RW/Min Flow*/ { 20, "Min Flow", ABP_UINT16, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI20Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:20 ADI21: UINT16/RW/Flow OK*/  { 21, "Flow OK", ABP_UINT16, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI21Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:21 ADI22: UINT16/RW/Leak Rate*/{ 22, "Leak Rate", ABP_UINT16, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI22Value, &ad_UINT16Props_0_65535_0 } } },
+    /* Idx:22 ADI23: UINT8/RW/Over Temp*/ { 23, "Over Temp", ABP_UINT8, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI23Value, &ad_UINT8Props_0_255_0 } } },
+    /* Idx:23 ADI24: UINT8/RW/Response Time*/ { 24, "Response Time", ABP_UINT8, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI24Value, &ad_UINT8Props_0_255_0 } } },
+    /* Idx:24 ADI25: UINT8/RW/Restart Time*/ { 25, "Restart Time", ABP_UINT8, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI25Value, &ad_UINT8Props_0_255_0 } } },
+    /* Idx:25 ADI26: UINT16/RW/GUI Control*/ { 26, "GUI Control", ABP_UINT16, 1, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI26Value, &ad_UINT16Props_0_65535_0 } } },
+    
+    /* Idx:20 ADI21: UINT8[4]/RW/IPAddressLocal*/{ 21, "Local IP Address", ABP_UINT8,  4, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI21Value, &ad_UINT8Props_0_255_0 } } },
+    /* Idx:21 ADI22: UINT8[4]/RW/SMaskLocal*/{ 22, "Local Subnet Mask",    ABP_UINT8,  4, ABP_APPD_DESCR_GET_ACCESS | ABP_APPD_DESCR_SET_ACCESS, { { &AD_sADIValues.iADI22Value, &ad_UINT8Props_0_255_0 } } },
+>>>>>>> parent of 012a0e2... updates
+
+};
+
+
+/*-------------------------------------------------------------------------------------------------------
+** ADI write process data mappings ( Application -> Anybus )
+**
+**-------------------------------------------------------------------------------------------------------
+** Array of indexes entries in AD_asADIEntryList (Idx:xx) in native mapping order
+** Note: Mapping sequence is terminated by index value 0xFFFF and MUST be present at end of LIST
+**-------------------------------------------------------------------------------------------------------
+*/
+
+//UINT16 AD_aiPdWriteIndexDataMap1[] =
+//{
+//   0, 0xFFFF
+//};
+
+UINT16 AD_aiPdWriteIndexDataMap2[] =//EIP Status Word(2) - Input Byte(1) - Supply Flow(1) - Return Flow(1) - Water Temperature(1) = (6)
+{
+   18,0,1,2,3,0xFFFF                                                   // 6, 8, 10, 12, 14, 16, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 32, 34, 35, 0xFFFF	//modified for ADI list 3 R/W
+};
+
+
+/*-------------------------------------------------------------------------------------------------------
+** ADI read process data mappings ( Anybus -> Application )
+**
+**-------------------------------------------------------------------------------------------------------
+** Array of indexes entries in AD_asADIEntryList (Idx:xx) in native mapping order
+** Note: Mapping sequence is terminated by index value 0xFFFF and MUST be present at end of LIST
+**-------------------------------------------------------------------------------------------------------
+*/
+
+//UINT16 AD_aiPdReadIndexDataMap1[] =
+//{
+//   1,0xFFFF
+//};
+UINT16 AD_aiPdReadIndexDataMap2[] =//EIP Command Word(2) - Output Byte(2) = (4)
+{
+   19,4,0xFFFF                                                                      // 1, 2,3,4,0xFFFF// 4,0xFFFF//, 6, 8, 10, 12, 14, 16, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 32, 34, 35, 0xFFFF	//modified for ADI list 3 R/W
+};
+
+/*******************************************************************************
+**
+** Private Globals
+**
+********************************************************************************
+*/
+
+
+/*******************************************************************************
+**
+** Public Functions
+**
+********************************************************************************
+*/
+
+
+/*------------------------------------------------------------------------------
+** AD_Init()
+**------------------------------------------------------------------------------
+*/
+
+void AD_Init( void )
+{
+   UINT16 i;
+
+   /*
+   ** In this context we should initilaize the AD object
+   ** to be prepared for startup.
+   **
+   ** The driver globals: AB_iModuleType and AB_iNetworkType
+   ** are initlaized and can be used for AD object branding
+   ** depening on connected module type
+   */
+
+   AD_iNumOfADIs = sizeof( AD_asADIEntryList ) / sizeof( AD_AdiEntryType );
+   AD_iHighestInstanceNumber = 0;
+
+   for( i = 0; i < AD_iNumOfADIs; i++ )
+   {
+      if( AD_asADIEntryList[ i ].iInstance > AD_iHighestInstanceNumber )
+      {
+         AD_iHighestInstanceNumber = AD_asADIEntryList[ i ].iInstance;
+      }
+
+      AD_asADIEntryList[ i ].bStatBits = 0;
+   }
+
+   /*
+   ** Setup process data mapping pointers
+   */
+
+   switch( AB_iNetworkType )
+   {
+   case 0x009A: /* BACnet/IP */
+      /*
+      ** For BACnet we cannot have any read process data
+      */
+      //AD_paiPdReadMap   = NULL;
+      //AD_paiPdWriteMap  = AD_aiPdWriteIndexDataMap1;
+      break;
+   case 0x009C: /* EtherNet/IP 2-Port */
+      AD_paiPdReadMap   = AD_aiPdReadIndexDataMap2;
+      AD_paiPdWriteMap  = AD_aiPdWriteIndexDataMap2;
+      break;
+   case 0x0093: /* Modbus/TCP 2-Port */
+   default:
+      AD_paiPdReadMap   = AD_aiPdReadIndexDataMap2;
+      AD_paiPdWriteMap  = AD_aiPdWriteIndexDataMap2;
+      break;
+   }
+
+   /*
+   ** Reset ADI mapping processors
+   */
+
+   AD_MapNextAdiReadArea( NULL, TRUE );
+   AD_MapNextAdiWriteArea( NULL, TRUE );
+
+} /* end of AD_Init */
+
+/*------------------------------------------------------------------------------
+** AD_GetAdiInstEntry()
+**------------------------------------------------------------------------------
+*/
+
+AD_AdiEntryType* AD_GetAdiInstEntry( UINT16 iInstance )
+{
+   UINT16 i;
+   AD_AdiEntryType* psEntry = NULL;
+
+   for( i = 0; i < sizeof( AD_asADIEntryList ) / sizeof( AD_AdiEntryType ); i++ )
+   {
+      if( AD_asADIEntryList[ i ].iInstance == iInstance )
+      {
+         psEntry = &AD_asADIEntryList[ i ];
+         break;
+      }
+   }
+
+   return( psEntry );
+} /* end of AD_GetAdiInstEntry */
+
+
+/*------------------------------------------------------------------------------
+** AD_MapNextAdiReadArea()
+**------------------------------------------------------------------------------
+*/
+
+BOOL8 AD_MapNextAdiReadArea( ABP_MsgType* psMsgBuffer, BOOL8 fReset )
+{
+   static UINT8 bNextMapIndex = 0;
+
+   if( fReset )
+   {
+      bNextMapIndex = 0;
+      AB_bPdReadSize = 0;
+      return( FALSE );
+   }
+
+   if( ( AD_paiPdReadMap != NULL ) &&
+       ( AD_paiPdReadMap[ bNextMapIndex ] != 0xFFFF ) )
+   {
+      psMsgBuffer->sHeader.bDestObj             = ABP_OBJ_NUM_NW;
+      psMsgBuffer->sHeader.iInstance            = iTOiLe( 1 );
+      psMsgBuffer->sHeader.bCmd                 = ABP_MSG_HEADER_C_BIT | ABP_NW_CMD_MAP_ADI_READ_AREA;
+      psMsgBuffer->sHeader.bDataSize            = 4;
+      *(UINT16*)&psMsgBuffer->sHeader.bCmdExt0  = iTOiLe( AD_asADIEntryList[ AD_paiPdReadMap[ bNextMapIndex ] ].iInstance );  /* ADI Instance number */
+      psMsgBuffer->abData[ 0 ]                  = AD_asADIEntryList[ AD_paiPdReadMap[ bNextMapIndex ] ].bDataType;            /* ADI data type */
+      psMsgBuffer->abData[ 1 ]                  = AD_asADIEntryList[ AD_paiPdReadMap[ bNextMapIndex ] ].bNumOfElements;       /* Number of elemets in ADI */
+      *(UINT16*)&psMsgBuffer->abData[ 2 ]       = iTOiLe( ( &AD_asADIEntryList[ AD_paiPdReadMap[ bNextMapIndex ] ] - &AD_asADIEntryList[ 0 ] ) + 1 ); /* ADI order number */
+      bControlReg                              |= ABP_CTRL_M_BIT;
+
+      AB_bPdReadSize += ( AD_GetDataTypeSize( AD_asADIEntryList[ AD_paiPdReadMap[ bNextMapIndex ] ].bDataType ) * AD_asADIEntryList[ AD_paiPdReadMap[ bNextMapIndex ] ].bNumOfElements );
+
+      bNextMapIndex++;
+      return( TRUE );
+   }
+
+   return( FALSE );
+
+} /* end of AD_MapNextAdiReadArea */
+
+
+/*------------------------------------------------------------------------------
+** AD_MapNextAdiWriteArea()
+**------------------------------------------------------------------------------
+*/
+
+BOOL8 AD_MapNextAdiWriteArea( ABP_MsgType* psMsgBuffer, BOOL8 fReset )
+{
+   static UINT8 bNextMapIndex = 0;
+
+   if( fReset )
+   {
+      bNextMapIndex = 0;
+      AB_bPdWriteSize = 0;
+      return( FALSE );
+   }
+
+   if( ( AD_paiPdWriteMap != NULL ) &&
+       ( AD_paiPdWriteMap[ bNextMapIndex ] != 0xFFFF ) )
+   {
+      psMsgBuffer->sHeader.bDestObj             = ABP_OBJ_NUM_NW;
+      psMsgBuffer->sHeader.iInstance            = iTOiLe( 1 );
+      psMsgBuffer->sHeader.bCmd                 = ABP_MSG_HEADER_C_BIT | ABP_NW_CMD_MAP_ADI_WRITE_AREA;
+      psMsgBuffer->sHeader.bDataSize            = 4;
+      *(UINT16*)&psMsgBuffer->sHeader.bCmdExt0  = iTOiLe( AD_asADIEntryList[ AD_paiPdWriteMap[ bNextMapIndex ] ].iInstance );  /* ADI Instance number */
+      psMsgBuffer->abData[ 0 ]                  = AD_asADIEntryList[ AD_paiPdWriteMap[ bNextMapIndex ] ].bDataType;            /* ADI data type */
+      psMsgBuffer->abData[ 1 ]                  = AD_asADIEntryList[ AD_paiPdWriteMap[ bNextMapIndex ] ].bNumOfElements;       /* Number of elemets in ADI */
+      *(UINT16*)&psMsgBuffer->abData[ 2 ]       = iTOiLe( ( &AD_asADIEntryList[ AD_paiPdWriteMap[ bNextMapIndex ] ] - &AD_asADIEntryList[ 0 ] ) + 1 ); /* ADI order number */
+      bControlReg                              |= ABP_CTRL_M_BIT;
+
+      AB_bPdWriteSize += ( AD_GetDataTypeSize( AD_asADIEntryList[ AD_paiPdWriteMap[ bNextMapIndex ] ].bDataType ) * AD_asADIEntryList[ AD_paiPdWriteMap[ bNextMapIndex ] ].bNumOfElements );
+
+      bNextMapIndex++;
+      return( TRUE );
+   }
+
+   return( FALSE );
+
+} /* end of AD_MapNextAdiWriteArea */
+
+
+/*------------------------------------------------------------------------------
+** AD_ProcNextUserInitCmd()
+**------------------------------------------------------------------------------
+*/
+
+BOOL8 AD_ProcNextUserInitCmd( ABP_MsgType* psMsgBuffer )
+{
+   return( FALSE );
+} /* en of AD_ProcNextUserInitCmd */
+
+void AD_ProcUserInitResp( ABP_MsgType* psMsgBuffer )
+{
+
+} /* end of AD_ProcUserInitResp */
+
+
+/*------------------------------------------------------------------------------
+** AD_ProcObjectRequest()
+**------------------------------------------------------------------------------
+*/
+
+void AD_ProcObjectRequest( ABP_MsgType* psMsgBuffer )
+{
+   AD_AdiEntryType* psAdiEntry;
+   UINT16 iItemSize;
+
+   if( iLeTOi( psMsgBuffer->sHeader.iInstance ) == ABP_INST_OBJ )
+   {
+      /* An request to the object instance */
+
+      switch( psMsgBuffer->sHeader.bCmd & ABP_MSG_HEADER_CMD_BITS )
+      {
+      case ABP_CMD_GET_ATTR:
+         switch( psMsgBuffer->sHeader.bCmdExt0 )
+         {
+         case ABP_OA_NAME: /* Name */
+            memcpy( psMsgBuffer->abData, "Application data", 16 );
+            psMsgBuffer->sHeader.bDataSize = 16;
+            break;
+
+         case ABP_OA_REV: /* Revision */
+            psMsgBuffer->abData[ 0 ] = 1;
+            psMsgBuffer->sHeader.bDataSize = ABP_OA_REV_DS;
+            break;
+
+         case ABP_OA_NUM_INST: /* Number of instances */
+            *(UINT16*)&psMsgBuffer->abData[ 0 ] = iTOiLe( AD_iNumOfADIs );
+            psMsgBuffer->sHeader.bDataSize = ABP_OA_NUM_INST_DS;
+            break;
+
+         case ABP_OA_HIGHEST_INST: /* Highest instance no. */
+            *(UINT16*)&psMsgBuffer->abData[ 0 ] = iTOiLe( AD_iHighestInstanceNumber );
+            psMsgBuffer->sHeader.bDataSize = ABP_OA_HIGHEST_INST_DS;
+            break;
+
+         default: /* Unsupported attribute */
+            SetMsgError( psMsgBuffer, 1, ABP_ERR_INV_CMD_EXT_0 );
+            break;
+         }
+         break;
+      case ABP_APPD_CMD_GET_INST_BY_ORDER:
+         if( ( iLeTOi( *(UINT16*)&psMsgBuffer->sHeader.bCmdExt0 ) == 0 ) ||
+             ( iLeTOi( *(UINT16*)&psMsgBuffer->sHeader.bCmdExt0 ) > AD_iNumOfADIs ) )
+         {
+            /*
+            ** Requested order number does not exist.
+            */
+
+            SetMsgError( psMsgBuffer, 1, ABP_ERR_INV_CMD_EXT_0 );
+         }
+         else
+         {
+            *(UINT16*)&psMsgBuffer->abData[ 0 ] = iTOiLe( AD_asADIEntryList[ iLeTOi( *(UINT16*)&psMsgBuffer->sHeader.bCmdExt0 ) - 1 ].iInstance );
+            psMsgBuffer->sHeader.bDataSize = ABP_UINT16_SIZEOF;
+         }
+         break;
+      default: /* Unsupported command */
+         SetMsgError( psMsgBuffer, 1, ABP_ERR_UNSUP_CMD );
+         break;
+      }
+   }
+   else if( ( psAdiEntry = AD_GetAdiInstEntry( iLeTOi( psMsgBuffer->sHeader.iInstance ) ) ) != NULL )
+   {
+      /* ADI instance found, now switch on command */
+
+      switch( psMsgBuffer->sHeader.bCmd & ABP_MSG_HEADER_CMD_BITS )
+      {
+      case ABP_CMD_GET_ATTR:
+
+         /* Switch on attribute */
+         switch( psMsgBuffer->sHeader.bCmdExt0 )
+         {
+         case ABP_APPD_IA_NAME: /* Instance name */
+            if( psAdiEntry->pabName )
+            {
+               psMsgBuffer->sHeader.bDataSize = strlen( psAdiEntry->pabName );
+               memcpy( psMsgBuffer->abData, psAdiEntry->pabName, psMsgBuffer->sHeader.bDataSize );
+            }
+            else
+            {
+               psMsgBuffer->sHeader.bDataSize = 0;
+            }
+            break;
+
+         case ABP_APPD_IA_DATA_TYPE: /* Data type */
+            psMsgBuffer->abData[ 0 ] = psAdiEntry->bDataType;
+            psMsgBuffer->sHeader.bDataSize = ABP_APPD_IA_DATA_TYPE_DS;
+            break;
+
+         case ABP_APPD_IA_NUM_ELEM: /* Number of elements */
+            psMsgBuffer->abData[ 0 ] = psAdiEntry->bNumOfElements;
+            psMsgBuffer->sHeader.bDataSize = ABP_APPD_IA_NUM_ELEM_DS;
+            break;
+
+         case ABP_APPD_IA_DESCRIPTOR: /* Descriptor */
+            psMsgBuffer->abData[ 0 ] = psAdiEntry->bDesc;
+            psMsgBuffer->sHeader.bDataSize = ABP_APPD_IA_DESCRIPTOR_DS;
+            break;
+
+         case ABP_APPD_IA_VALUE: /* Value */
+            if( !( psAdiEntry->bDesc & ABP_APPD_DESCR_GET_ACCESS ) )
+            {
+               SetMsgError( psMsgBuffer, 1, ABP_ERR_ATTR_NOT_GETABLE );
+               break;
+            }
+
+            psMsgBuffer->sHeader.bDataSize = (UINT8)AD_GetAdiValue( psAdiEntry, &psMsgBuffer->abData[ 0 ] );
+            break;
+
+         case ABP_APPD_IA_MAX_VALUE:
+         case ABP_APPD_IA_MIN_VALUE:
+         case ABP_APPD_IA_DFLT_VALUE:
+            if( psAdiEntry->uData.sUINT8.psValueProps )
+            {
+               switch( psAdiEntry->bDataType )
+               {
+               case ABP_BOOL:
+               case ABP_CHAR:
+               case ABP_UINT8:
+               case ABP_SINT8:
+               case ABP_ENUM:
+                  switch( psMsgBuffer->sHeader.bCmdExt0 )
+                  {
+                  case ABP_APPD_IA_MAX_VALUE:
+                     psMsgBuffer->abData[ 0 ] = psAdiEntry->uData.sUINT8.psValueProps->bMaxValue;
+                     break;
+                  case ABP_APPD_IA_MIN_VALUE:
+                     psMsgBuffer->abData[ 0 ] = psAdiEntry->uData.sUINT8.psValueProps->bMinValue;
+                     break;
+                  default:
+                     psMsgBuffer->abData[ 0 ] = psAdiEntry->uData.sUINT8.psValueProps->bDefaultValue;
+                     break;
+                  }
+
+                  psMsgBuffer->sHeader.bDataSize = 1;
+                  break;
+               case ABP_UINT16:
+               case ABP_SINT16:
+                  switch( psMsgBuffer->sHeader.bCmdExt0 )
+                  {
+                  case ABP_APPD_IA_MAX_VALUE:
+                     *(UINT16*)&psMsgBuffer->abData[ 0 ] = ( eNetFormat == NET_BIGENDIAN ) ? iTOiBe( psAdiEntry->uData.sUINT16.psValueProps->iMaxValue ) : iTOiLe( psAdiEntry->uData.sUINT16.psValueProps->iMaxValue );
+                     break;
+                  case ABP_APPD_IA_MIN_VALUE:
+                     *(UINT16*)&psMsgBuffer->abData[ 0 ] = ( eNetFormat == NET_BIGENDIAN ) ? iTOiBe( psAdiEntry->uData.sUINT16.psValueProps->iMinValue ) : iTOiLe( psAdiEntry->uData.sUINT16.psValueProps->iMinValue );
+                     break;
+                  default:
+                     *(UINT16*)&psMsgBuffer->abData[ 0 ] = ( eNetFormat == NET_BIGENDIAN ) ? iTOiBe( psAdiEntry->uData.sUINT16.psValueProps->iDefaultValue ) : iTOiLe( psAdiEntry->uData.sUINT16.psValueProps->iDefaultValue );
+                     break;
+                  }
+
+                  psMsgBuffer->sHeader.bDataSize = 2;
+                  break;
+               case ABP_UINT32:
+               case ABP_SINT32:
+               case ABP_FLOAT:
+                  switch( psMsgBuffer->sHeader.bCmdExt0 )
+                  {
+                  case ABP_APPD_IA_MAX_VALUE:
+                     *(UINT32*)&psMsgBuffer->abData[ 0 ] = ( eNetFormat == NET_BIGENDIAN ) ? lTOlBe( psAdiEntry->uData.sUINT32.psValueProps->lMaxValue ) : lTOlLe( psAdiEntry->uData.sUINT32.psValueProps->lMaxValue );
+                     break;
+                  case ABP_APPD_IA_MIN_VALUE:
+                     *(UINT32*)&psMsgBuffer->abData[ 0 ] = ( eNetFormat == NET_BIGENDIAN ) ? lTOlBe( psAdiEntry->uData.sUINT32.psValueProps->lMinValue ) : lTOlLe( psAdiEntry->uData.sUINT32.psValueProps->lMinValue );
+                     break;
+                  default:
+                     *(UINT32*)&psMsgBuffer->abData[ 0 ] = ( eNetFormat == NET_BIGENDIAN ) ? lTOlBe( psAdiEntry->uData.sUINT32.psValueProps->lDefaultValue ) : lTOlLe( psAdiEntry->uData.sUINT32.psValueProps->lDefaultValue );
+                     break;
+                  }
+
+                  psMsgBuffer->sHeader.bDataSize = 4;
+                  break;
+#ifdef AB_ENABLE_64BIT_ADI_SUPPORT
+               case ABP_UINT64:
+               case ABP_SINT64:
+                  switch( psMsgBuffer->sHeader.bCmdExt0 )
+                  {
+                  case ABP_APPD_IA_MAX_VALUE:
+                     *(UINT64*)&psMsgBuffer->abData[ 0 ] = ( eNetFormat == NET_BIGENDIAN ) ? lTOlBe64( psAdiEntry->uData.sUINT64.psValueProps->lMaxValue ) : lTOlLe64( psAdiEntry->uData.sUINT64.psValueProps->lMaxValue );
+                     break;
+                  case ABP_APPD_IA_MIN_VALUE:
+                     *(UINT64*)&psMsgBuffer->abData[ 0 ] = ( eNetFormat == NET_BIGENDIAN ) ? lTOlBe64( psAdiEntry->uData.sUINT64.psValueProps->lMinValue ) : lTOlLe64( psAdiEntry->uData.sUINT64.psValueProps->lMinValue );
+                     break;
+                  default:
+                     *(UINT64*)&psMsgBuffer->abData[ 0 ] = ( eNetFormat == NET_BIGENDIAN ) ? lTOlBe64( psAdiEntry->uData.sUINT64.psValueProps->lDefaultValue ) : lTOlLe64( psAdiEntry->uData.sUINT64.psValueProps->lDefaultValue );
+                     break;
+                  }
+
+                  psMsgBuffer->sHeader.bDataSize = 8;
+                  break;
+#endif
+               default:
+                  while( 1 ); /* Trap: ADI type not supported */
+                  break;
+               }
+            }
+            else
+            {
+               SetMsgError( psMsgBuffer, 1, ABP_ERR_INV_CMD_EXT_0 );
+            }
+            break;
+
+         default: /* Unsupported attribute */
+            SetMsgError( psMsgBuffer, 1, ABP_ERR_INV_CMD_EXT_0 );
+            break;
+         }
+         break;
+      case ABP_CMD_SET_ATTR:
+         switch( psMsgBuffer->sHeader.bCmdExt0 )
+         {
+         case ABP_APPD_IA_NAME:
+         case ABP_APPD_IA_DATA_TYPE:
+         case ABP_APPD_IA_NUM_ELEM:
+         case ABP_APPD_IA_DESCRIPTOR: /* Attribues not settable */
+            SetMsgError( psMsgBuffer, 1, ABP_ERR_ATTR_NOT_SETABLE );
+            break;
+         case ABP_APPD_IA_VALUE:
+            if( !( psAdiEntry->bDesc & ABP_APPD_DESCR_SET_ACCESS ) )
+            {
+               SetMsgError( psMsgBuffer, 1, ABP_ERR_ATTR_NOT_SETABLE );
+               break;
+            }
+
+
+            /* 1. Check array lengths */
+            iItemSize = AD_GetDataTypeSize( psAdiEntry->bDataType );
+            if( psMsgBuffer->sHeader.bDataSize > ( iItemSize * psAdiEntry->bNumOfElements ) )
+            {
+               SetMsgError( psMsgBuffer, 1, ABP_ERR_TOO_MUCH_DATA );
+               break;
+            }
+            else if( psMsgBuffer->sHeader.bDataSize < ( iItemSize * psAdiEntry->bNumOfElements ) )
+            {
+               SetMsgError( psMsgBuffer, 1, ABP_ERR_NOT_ENOUGH_DATA );
+               break;
+            }
+
+            if( AD_SetAdiValue( psAdiEntry, &psMsgBuffer->abData[ 0 ], FALSE ) == -1 )
+            {
+               SetMsgError( psMsgBuffer, 1, ABP_ERR_OUT_OF_RANGE );
+            }
+            break;
+
+         default: /* Unsupported attribute */
+            SetMsgError( psMsgBuffer, 1, ABP_ERR_INV_CMD_EXT_0 );
+            break;
+         }
+         break;
+      case ABP_CMD_GET_ENUM_STR:
+         switch( psMsgBuffer->sHeader.bCmdExt0 )
+         {
+         case ABP_APPD_IA_VALUE:
+            if( psAdiEntry->bDataType == ABP_ENUM )
+            {
+               if( ( psAdiEntry->uData.sENUM.psValueProps == NULL ) ||
+                   ( psAdiEntry->uData.sENUM.psValueProps->pasEnumStrings == NULL ) )
+               {
+                  SetMsgError( psMsgBuffer, 1, ABP_ERR_UNSUP_CMD );
+               }
+               else
+               {
+                  UINT8 b = 0;
+
+                  for( b = 0; b < psAdiEntry->uData.sENUM.psValueProps->bNumOfEnumStrings; b++ )
+                  {
+                     if( psAdiEntry->uData.sENUM.psValueProps->pasEnumStrings[ b ].eValue == psMsgBuffer->sHeader.bCmdExt1 )
+                     {
+                        break;
+                     }
+                  }
+
+                  if( b < psAdiEntry->uData.sENUM.psValueProps->bNumOfEnumStrings )
+                  {
+                     psMsgBuffer->sHeader.bDataSize = strlen( psAdiEntry->uData.sENUM.psValueProps->pasEnumStrings[ b ].abEnumStr );
+                     memcpy( &psMsgBuffer->abData[ 0 ], psAdiEntry->uData.sENUM.psValueProps->pasEnumStrings[ b ].abEnumStr, psMsgBuffer->sHeader.bDataSize );
+                  }
+                  else
+                  {
+                     /*
+                     ** Enum value not found in string lookup
+                     */
+
+                     SetMsgError( psMsgBuffer, 1, ABP_ERR_OUT_OF_RANGE );
+                  }
+               }
+            }
+            else
+            {
+               SetMsgError( psMsgBuffer, 1, ABP_ERR_UNSUP_CMD );
+            }
+            break;
+         default:
+            SetMsgError( psMsgBuffer, 1, ABP_ERR_UNSUP_CMD );
+            break;
+         }
+         break;
+      case ABP_CMD_GET_INDEXED_ATTR:
+         switch( psMsgBuffer->sHeader.bCmdExt0 )
+         {
+         //case ABP_APPD_IA_VALUE:
+         //   break;
+
+         default:
+            SetMsgError( psMsgBuffer, 1, ABP_ERR_UNSUP_CMD );
+            break;
+         }
+         break;
+      case ABP_CMD_SET_INDEXED_ATTR:
+         switch( psMsgBuffer->sHeader.bCmdExt0 )
+         {
+         //case ABP_APPD_IA_VALUE:
+         //   break;
+
+         default:
+            SetMsgError( psMsgBuffer, 1, ABP_ERR_UNSUP_CMD );
+            break;
+         }
+         break;
+
+      default: /* Unsupported command */
+         SetMsgError( psMsgBuffer, 1, ABP_ERR_UNSUP_CMD );
+         break;
+      }
+   }
+   else
+   {
+      /* Instance not found */
+      SetMsgError( psMsgBuffer, 1, ABP_ERR_UNSUP_INST );
+   }
+
+} /* end of AD_ProcObjectRequest */
+
+
+/*------------------------------------------------------------------------------
+** AD_GetDataTypeSize()
+**------------------------------------------------------------------------------
+*/
+
+UINT8 AD_GetDataTypeSize( UINT8 bDataType )
+{
+   UINT8 bSize;
+
+   switch( bDataType )
+   {
+   case ABP_BOOL:
+   case ABP_CHAR:
+   case ABP_UINT8:
+   case ABP_ENUM:
+   case ABP_SINT8:
+      bSize = 1;
+      break;
+   case ABP_UINT16:
+   case ABP_SINT16:
+      bSize = 2;
+      break;
+   case ABP_UINT32:
+   case ABP_SINT32:
+   case ABP_FLOAT:
+      bSize = 4;
+      break;
+#ifdef AB_ENABLE_64BIT_ADI_SUPPORT
+   case ABP_UINT64:
+   case ABP_SINT64:
+      bSize = 8;
+      break;
+#endif
+   default:
+      while(1); /* Trap */
+      break;
+   }
+
+   return( bSize );
+
+} /* end of AD_GetDataTypeSize */
+
+
+/*------------------------------------------------------------------------------
+** AD_GetAdiValue()
+**------------------------------------------------------------------------------
+*/
+
+UINT16 AD_GetAdiValue( AD_AdiEntryType* psAdiEntry, UINT8* pabDataPtr )
+{
+   UINT16 i;
+   UINT16 iSize = 0;
+   UINT8* temp, *temp2;
+   switch( psAdiEntry->bDataType )
+   {
+   case ABP_BOOL:
+   case ABP_CHAR:
+   case ABP_UINT8:
+   case ABP_SINT8:
+   case ABP_ENUM:
+      memcpy( pabDataPtr, psAdiEntry->uData.sUINT8.pbValuePtr, psAdiEntry->bNumOfElements );
+      iSize = psAdiEntry->bNumOfElements;
+      break;
+   case ABP_SINT16:
+   case ABP_UINT16:
+      for( i = 0; i < psAdiEntry->bNumOfElements; i++ )
+      {
+         iSize += 2;
+//         temp = (UINT8*)pabDataPtr; //temp2 = (UINT8)psAdiEntry->uData.sUINT16.piValuePtr[ i ];
+         *pabDataPtr = (UINT8)psAdiEntry->uData.sUINT16.piValuePtr[ i ];
+         pabDataPtr++;
+         *pabDataPtr = (UINT8)(psAdiEntry->uData.sUINT16.piValuePtr[ i ]>>8);
+//         memcpy(&temp, &temp2, 2);
+//         *temp = *temp2;
+//         temp++; temp2++;
+//         memcpy(&temp, &temp2, 1);
+//         *&pabDataPtr[ i*2 ] = ( eNetFormat == NET_BIGENDIAN ) ? iTOiBe( psAdiEntry->uData.sUINT16.piValuePtr[ i ] ) : iTOiLe( psAdiEntry->uData.sUINT16.piValuePtr[ i ] );
+      }
+      break;
+   case ABP_UINT32:
+   case ABP_SINT32:
+   case ABP_FLOAT:
+      for( i = 0; i < psAdiEntry->bNumOfElements; i++ )
+      {
+         iSize += 4;
+//         *&pabDataPtr[ i*4 ] = ( eNetFormat == NET_BIGENDIAN ) ? lTOlBe( psAdiEntry->uData.sUINT32.plValuePtr[ i ] ) : lTOlLe( psAdiEntry->uData.sUINT32.plValuePtr[ i ] );
+         *pabDataPtr = (UINT8)psAdiEntry->uData.sUINT32.plValuePtr[ i ];
+         pabDataPtr++;
+         *pabDataPtr = (UINT8)(psAdiEntry->uData.sUINT32.plValuePtr[ i ]>>8);
+         pabDataPtr++;
+         *pabDataPtr = (UINT8)(psAdiEntry->uData.sUINT32.plValuePtr[ i ]>>16);
+         pabDataPtr++;
+         *pabDataPtr = (UINT8)(psAdiEntry->uData.sUINT32.plValuePtr[ i ]>>24);
+      }
+      break;
+#ifdef AB_ENABLE_64BIT_ADI_SUPPORT
+   case ABP_UINT64:
+   case ABP_SINT64:
+      for( i = 0; i < psAdiEntry->bNumOfElements; i++ )
+      {
+         iSize += 8;
+         *(UINT64*)&pabDataPtr[ i*8 ] = ( eNetFormat == NET_BIGENDIAN ) ? lTOlBe64( psAdiEntry->uData.sUINT64.plValuePtr[ i ] ) : lTOlLe64( psAdiEntry->uData.sUINT64.plValuePtr[ i ] );
+      }
+      break;
+#endif
+   default:
+      while( 1 ); /* Trap: Unknown data type */
+      break;
+   }
+
+   return( iSize );
+
+} /* end of AD_GetAdiValue */
+
+
+/*------------------------------------------------------------------------------
+** AD_SetAdiValue()
+**------------------------------------------------------------------------------
+*/
+
+SINT16 AD_SetAdiValue( AD_AdiEntryType* psAdiEntry, UINT8* pabDataPtr, BOOL8 fPdRead )
+{
+   BOOL8 fCheckFailed = FALSE;
+   SINT16 iSetSize = -1;
+   UINT16 i;
+
+   union
+   {
+      UINT16 iValue;
+      SINT16 iSignedValue;
+      UINT32 lValue;
+      SINT32 lSignedValue;
+      float  rValue;
+#ifdef AB_ENABLE_64BIT_ADI_SUPPORT
+      UINT64 l64Value;
+      SINT64 l64SignedValue;
+#endif
+   } sValue;
+
+   if( psAdiEntry->uData.sUINT8.psValueProps )
+   {
+      /* 2. Check array max/min limits */
+      for( i = 0; i < psAdiEntry->bNumOfElements; i++ )
+      {
+//         switch( psAdiEntry->bDataType )
+//         {
+//         case ABP_BOOL:
+//         case ABP_CHAR:
+//         case ABP_UINT8:
+//         case ABP_ENUM:
+//            if( ( *(UINT8*)&pabDataPtr[ i ] > psAdiEntry->uData.sUINT8.psValueProps->bMaxValue ) ||
+//                ( *(UINT8*)&pabDataPtr[ i ] < psAdiEntry->uData.sUINT8.psValueProps->bMinValue ) )
+//            {
+//               fCheckFailed = TRUE;
+//            }
+//            break;
+//         case ABP_SINT8:
+//            if( ( *(SINT8*)&pabDataPtr[ i ] > psAdiEntry->uData.sSINT8.psValueProps->bMaxValue ) ||
+//                ( *(SINT8*)&pabDataPtr[ i ] < psAdiEntry->uData.sSINT8.psValueProps->bMinValue ) )
+//            {
+//               fCheckFailed = TRUE;
+//            }
+//            break;
+//
+//         case ABP_UINT16:
+//            sValue.iValue = ( eNetFormat == NET_BIGENDIAN ) ? iBeTOi( *(UINT16*)&pabDataPtr[ i*2 ] ) : iLeTOi( *(UINT16*)&pabDataPtr[ i*2 ] );
+//
+//            if( ( sValue.iValue > psAdiEntry->uData.sUINT16.psValueProps->iMaxValue ) ||
+//                ( sValue.iValue < psAdiEntry->uData.sUINT16.psValueProps->iMinValue ) )
+//            {
+//               fCheckFailed = TRUE;
+//            }
+//            break;
+//         case ABP_SINT16:
+//            sValue.iValue = ( eNetFormat == NET_BIGENDIAN ) ? iBeTOi( *(UINT16*)&pabDataPtr[ i*2 ] ) : iLeTOi( *(UINT16*)&pabDataPtr[ i*2 ] );
+//
+//            if( ( sValue.iSignedValue > psAdiEntry->uData.sSINT16.psValueProps->iMaxValue ) ||
+//                ( sValue.iSignedValue < psAdiEntry->uData.sSINT16.psValueProps->iMinValue ) )
+//            {
+//               fCheckFailed = TRUE;
+//            }
+//            break;
+//         case ABP_UINT32:
+//            sValue.lValue = ( eNetFormat == NET_BIGENDIAN ) ? lBeTOl( *(UINT32*)&pabDataPtr[ i*4 ] ) : lLeTOl( *(UINT32*)&pabDataPtr[ i*4 ] );
+//
+//            if( ( sValue.lValue > psAdiEntry->uData.sUINT32.psValueProps->lMaxValue ) ||
+//                ( sValue.lValue < psAdiEntry->uData.sUINT32.psValueProps->lMinValue ) )
+//            {
+//               fCheckFailed = TRUE;
+//            }
+//            break;
+//         case ABP_SINT32:
+//            sValue.lValue = ( eNetFormat == NET_BIGENDIAN ) ? lBeTOl( *(UINT32*)&pabDataPtr[ i*4 ] ) : lLeTOl( *(UINT32*)&pabDataPtr[ i*4 ] );
+//
+//            if( ( sValue.lSignedValue > psAdiEntry->uData.sSINT32.psValueProps->lMaxValue ) ||
+//                ( sValue.lSignedValue < psAdiEntry->uData.sSINT32.psValueProps->lMinValue ) )
+//            {
+//               fCheckFailed = TRUE;
+//            }
+//            break;
+//         case ABP_FLOAT:
+//            sValue.lValue = ( eNetFormat == NET_BIGENDIAN ) ? lBeTOl( *(UINT32*)&pabDataPtr[ i*4 ] ) : lLeTOl( *(UINT32*)&pabDataPtr[ i*4 ] );
+//
+//            if( ( sValue.rValue > psAdiEntry->uData.sFLOAT.psValueProps->rMaxValue ) ||
+//                ( sValue.rValue < psAdiEntry->uData.sFLOAT.psValueProps->rMinValue ) )
+//            {
+//               fCheckFailed = TRUE;
+//            }
+//            break;
+//#ifdef AB_ENABLE_64BIT_ADI_SUPPORT
+//         case ABP_UINT64:
+//            sValue.l64Value = ( eNetFormat == NET_BIGENDIAN ) ? lBeTOl64( *(UINT64*)&pabDataPtr[ i*8 ] ) : lLeTOl64( *(UINT64*)&pabDataPtr[ i*8 ] );
+//
+//            if( ( sValue.l64Value > psAdiEntry->uData.sUINT64.psValueProps->lMaxValue ) ||
+//                ( sValue.l64Value < psAdiEntry->uData.sUINT64.psValueProps->lMinValue ) )
+//            {
+//               fCheckFailed = TRUE;
+//            }
+//            break;
+//         case ABP_SINT64:
+//            sValue.l64Value = ( eNetFormat == NET_BIGENDIAN ) ? lBeTOl64( *(UINT64*)&pabDataPtr[ i*8 ] ) : lLeTOl64( *(UINT64*)&pabDataPtr[ i*8 ] );
+//
+//            if( ( sValue.l64SignedValue > psAdiEntry->uData.sSINT64.psValueProps->lMaxValue ) ||
+//                ( sValue.l64SignedValue < psAdiEntry->uData.sSINT64.psValueProps->lMinValue ) )
+//            {
+//               fCheckFailed = TRUE;
+//            }
+//            break;
+//#endif
+//         }
+
+         if( fCheckFailed )
+         {
+            break;
+         }
+      }
+   }
+
+   /*
+   ** Update set size
+   */
+
+   iSetSize = ( AD_GetDataTypeSize( psAdiEntry->bDataType ) * psAdiEntry->bNumOfElements );
+
+   if( !fCheckFailed )
+   {
+      /* 3. Copy data to local memory */
+       UINT8* temp;
+      for( i = 0; i < psAdiEntry->bNumOfElements; i++ )
+      {
+         switch( psAdiEntry->bDataType )
+         {
+         case ABP_BOOL:
+         case ABP_CHAR:
+         case ABP_UINT8:
+         case ABP_SINT8:
+         case ABP_ENUM:
+            psAdiEntry->uData.sUINT8.pbValuePtr[ i ] = pabDataPtr[ i ];
+            break;
+         case ABP_UINT16:
+         case ABP_SINT16:
+             temp = (UINT8*)&psAdiEntry->uData.sUINT16.piValuePtr[ i ];
+//            psAdiEntry->uData.sUINT16.piValuePtr[ i ] = ( eNetFormat == NET_BIGENDIAN ) ?
+//                iBeTOi( *&pabDataPtr[ i*2 ] ) :
+//                iLeTOi( *&pabDataPtr[ i*2 ] );
+             *temp = *&pabDataPtr[ i*2 ];
+             temp++;
+             *temp = *&pabDataPtr[ ((i*2)+1) ];
+            break;
+         case ABP_UINT32:
+         case ABP_SINT32:
+         case ABP_FLOAT:
+//            psAdiEntry->uData.sUINT32.plValuePtr[ i ] = ( eNetFormat == NET_BIGENDIAN ) ? lBeTOl( *&pabDataPtr[ i*4 ] ) : lLeTOl( *&pabDataPtr[ i*4 ] );
+             *temp = *&pabDataPtr[ i*2 ];
+             temp++;
+             *temp = *&pabDataPtr[ ((i*2)+1) ];
+             temp++;
+             *temp = *&pabDataPtr[ ((i*2)+2) ];
+             temp++;
+             *temp = *&pabDataPtr[ ((i*2)+3) ];
+            break;
+#ifdef AB_ENABLE_64BIT_ADI_SUPPORT
+         case ABP_UINT64:
+         case ABP_SINT64:
+            psAdiEntry->uData.sUINT64.plValuePtr[ i ] = ( eNetFormat == NET_BIGENDIAN ) ? lBeTOl64( *(UINT64*)&pabDataPtr[ i*8 ] ) : lLeTOl64( *(UINT64*)&pabDataPtr[ i*8 ] );
+            break;
+#endif
+         default:
+            while( 1 ); /* Trap: Unknown data type */
+            break;
+
+         }
+      }
+
+      if( fPdRead )
+      {
+         psAdiEntry->bStatBits &= ~AD_STATBIT_PD_READ_LIMIT_ERROR;
+      }
+   }
+   else if( fPdRead )
+   {
+      psAdiEntry->bStatBits |= AD_STATBIT_PD_READ_LIMIT_ERROR;
+   }
+   else
+   {
+      iSetSize = -1; /* Indicate error */
+   }
+
+   return( iSetSize );
+
+} /* end of AD_SetAdiValue */
+
+
+/*------------------------------------------------------------------------------
+** AD_UpdatePdReadData()
+**------------------------------------------------------------------------------
+*/
+
+void AD_UpdatePdReadData( UINT8* pabPdDataBuf )
+{
+   UINT16 i;
+   BOOL8 fPdReadLimitError = FALSE;
+
+   if( AD_paiPdReadMap )
+   {
+      i = 0;
+      while( AD_paiPdReadMap[ i ] != 0xFFFF )
+      {
+         pabPdDataBuf += AD_SetAdiValue( &AD_asADIEntryList[ AD_paiPdReadMap[ i ] ], pabPdDataBuf, TRUE );
+
+         if( AD_asADIEntryList[ AD_paiPdReadMap[ i ] ].bStatBits & AD_STATBIT_PD_READ_LIMIT_ERROR )
+         {
+            fPdReadLimitError = TRUE;
+         }
+
+         i++;
+      }
+   }
+
+   AD_fHasPdReadDataLimitError = fPdReadLimitError;
+
+} /* end of AD_UpdatePdReadData */
+
+
+/*------------------------------------------------------------------------------
+** AD_UpdatePdWriteData()
+**------------------------------------------------------------------------------
+*/
+
+void AD_UpdatePdWriteData( UINT8* pabPdDataBuf )
+{
+   UINT16 i;
+
+//   pabPdDataBuf=&abTxBuffer[ 17 ];
+   if( AD_paiPdWriteMap )
+   {
+      i = 0;
+      while( AD_paiPdWriteMap[ i ] != 0xFFFF )
+      {
+         pabPdDataBuf += AD_GetAdiValue( &AD_asADIEntryList[ AD_paiPdWriteMap[ i ] ], pabPdDataBuf );
+         i++;
+      }
+   }
+
+} /* end of AD_UpdatePdWriteData */
+
+void setOutputADIs(UINT8 Status, UINT8 SUPPLY, UINT8 RETURN, UINT8 TEMP){
+    UINT8* ADI1 = &AD_sADIValues.iADI1Value;
+    UINT8* ADI2 = &AD_sADIValues.iADI2Value;
+    UINT8* ADI3 = &AD_sADIValues.iADI3Value;
+    UINT8* ADI4 = &AD_sADIValues.iADI4Value;
+
+//    *ADI1 = iTOiBe(Status);
+//    *ADI2 = iTOiBe(SUPPLY);
+//    *ADI3 = iTOiBe(RETURN);
+//    *ADI4 = iTOiBe(TEMP);
+    *ADI1 = Status;
+    *ADI2 = SUPPLY;
+    *ADI3 = RETURN;
+    *ADI4 = TEMP;
+}
+
+void setFeedbackADIs(void){
+    UINT16* ADI6 = &AD_sADIValues.iADI6Value;
+    UINT16* ADI7 = &AD_sADIValues.iADI7Value;
+    UINT16* ADI8 = &AD_sADIValues.iADI7Value;
+    UINT16* ADI9 = &AD_sADIValues.iADI9Value;
+    UINT16* ADI10 = &AD_sADIValues.iADI10Value;
+    UINT8* ADI11 = &AD_sADIValues.iADI11Value;
+    UINT8*  ADI12 = &AD_sADIValues.iADI12Value;
+    *ADI7 = MinFlow;
+    *ADI8 = FlowOK;
+    *ADI9 = LeakRate;
+    *ADI10 = OverTemp;
+    *ADI11 = ResponseTime;
+    *ADI12 = Units;
+
+}
+
+unsigned short getEIPCommand(void){
+    UINT16* ADI5 = &AD_sADIValues.iADI5Value;
+    return *ADI5;
+}
+
+void setWebsiteActiveData(UINT16 WebStatus, UINT16 WebSupply,UINT16 WebReturn){
+    UINT16*  ADI13 = &AD_sADIValues.iADI13Value;//Web Status
+    UINT16*  ADI17 = &AD_sADIValues.iADI17Value;//Web Supply
+    UINT16*  ADI18 = &AD_sADIValues.iADI18Value;//Web Return
+//    *ADI13 = iBeTOi(WebStatus);
+//    *ADI17 = iBeTOi(WebSupply);
+//    *ADI18 = iBeTOi(WebReturn);
+    *ADI13 = WebStatus;
+    *ADI17 = WebSupply;
+    *ADI18 = WebReturn;
+}
+
+void setWebsiteData(UINT8 Units,UINT16 MinFlow,UINT16 FlowOK,UINT16 LeakRate,UINT16 OverTemp,UINT8 ResponseTime,UINT16 RestartTime, UINT16 FirmwareRev, UINT32 SerialNum, UINT16 WebStatus, UINT16 WebSupply,UINT16 WebReturn){
+    UINT16* ADI7 = &AD_sADIValues.iADI7Value;//Min Flow
+    UINT16* ADI8 = &AD_sADIValues.iADI8Value;//Flow OK
+    UINT16* ADI9 = &AD_sADIValues.iADI9Value;//Leak Rate
+    UINT16* ADI10 = &AD_sADIValues.iADI10Value;//OverTemp
+    UINT8* ADI11 = &AD_sADIValues.iADI11Value;//ResponseTime
+    UINT8*  ADI12 = &AD_sADIValues.iADI12Value;//Units
+    UINT16*  ADI13 = &AD_sADIValues.iADI13Value;//Web Status
+    UINT16*  ADI14 = &AD_sADIValues.iADI14Value;//Firmware Rev
+    UINT32*  ADI15 = &AD_sADIValues.iADI15Value;//Serial Number
+    UINT16*  ADI16 = &AD_sADIValues.iADI16Value;//Restart Time
+    UINT16*  ADI17 = &AD_sADIValues.iADI17Value;//Web Supply
+    UINT16*  ADI18 = &AD_sADIValues.iADI18Value;//Web Return
+//#ifdef AB_HOST_PNIO_OBJECT_0xF6
+    *ADI7 = MinFlow;
+    *ADI8 = FlowOK;
+    *ADI9 = LeakRate;
+    *ADI10 = OverTemp;
+    *ADI11 = ResponseTime;
+    *ADI12 = Units;
+    *ADI13 = WebStatus;
+    *ADI14 = FirmwareRev;
+    *ADI15 = SerialNum;
+    *ADI16 = RestartTime;
+    *ADI17 = WebSupply;
+    *ADI18 = WebReturn;
+//#else
+//    *ADI7 = iTOiBe(MinFlow);
+//    *ADI8 = iTOiBe(FlowOK);
+//    *ADI9 = iTOiBe(LeakRate);
+//    *ADI10 = iTOiBe(OverTemp);
+//    *ADI11 = iTOiBe(ResponseTime);
+//    *ADI12 = iTOiBe(Units);
+//    *ADI13 = iTOiBe(WebStatus);
+//    *ADI14 = iTOiBe(FirmwareRev);
+//    *ADI15 = iTOiBe(SerialNum);
+//    *ADI16 = iTOiBe(RestartTime);
+//    *ADI17 = iTOiBe(WebSupply);
+//    *ADI18 = iTOiBe(WebReturn);
+//#endif
+}
+
+void SetWebStatus(UINT16 WebStatus){
+    UINT16*  ADI13 = &AD_sADIValues.iADI13Value;//Web Status
+    *ADI13 = WebStatus;
+}
+
+unsigned short GetWebStatus(void){
+    UINT16* ADI13 = &AD_sADIValues.iADI13Value;
+//    return iBeTOi(*ADI13);
+    return *ADI13;
+}
+
+unsigned long ReadADI(unsigned char ADInum){
+    UINT16* ADI7 = &AD_sADIValues.iADI7Value;//Min Flow
+    UINT16* ADI8 = &AD_sADIValues.iADI8Value;//Flow OK
+    UINT16* ADI9 = &AD_sADIValues.iADI9Value;//Leak Rate
+    UINT16* ADI10 = &AD_sADIValues.iADI10Value;//OverTemp
+    UINT8* ADI11 = &AD_sADIValues.iADI11Value;//ResponseTime
+    UINT8*  ADI12 = &AD_sADIValues.iADI12Value;//Units
+    UINT16*  ADI13 = &AD_sADIValues.iADI13Value;//Web Status
+    UINT16*  ADI14 = &AD_sADIValues.iADI14Value;//Firmware Rev
+    UINT32*  ADI15 = &AD_sADIValues.iADI15Value;//Serial Number
+    UINT16*  ADI16 = &AD_sADIValues.iADI16Value;//Restart Time
+    UINT16*  ADI17 = &AD_sADIValues.iADI17Value;//Web Supply
+    UINT16*  ADI18 = &AD_sADIValues.iADI18Value;//Web Return
+    UINT16*  ADI19 = &AD_sADIValues.iADI19Value;//EIP Input Status
+    UINT16*  ADI20 = &AD_sADIValues.iADI20Value;//EIP Output Status
+
+    switch(ADInum){
+        case 7:
+            return *ADI7;
+        case 8:
+            return *ADI8;
+        case 9:
+            return *ADI9;
+        case 10:
+            return *ADI10;
+        case 11:
+            return *ADI11;
+        case 12:
+            return *ADI12;
+        case 13:
+            return *ADI13;
+        case 14:
+            return *ADI14;
+        case 15:
+            return *ADI15;
+        case 16:
+            return *ADI16;
+        case 17:
+            return *ADI17;
+        case 18:
+            return *ADI18;
+        case 19:
+            return *ADI19;
+        case 20:
+            return *ADI20;
+        default:
+            return 0;
+    }
+}
+//
+BYTE *ReadIP(void){
+    UINT8*  ADI21 = &AD_sADIValues.iADI21Value;//IP Address Local
+    return ADI21;
+}
+BYTE *ReadSM(void){
+    UINT8*  ADI22 = &AD_sADIValues.iADI22Value;//SMask Local
+    return ADI22;
+}
+/*******************************************************************************
+**
+** End of ad_obj.c
+**
+********************************************************************************
+*/

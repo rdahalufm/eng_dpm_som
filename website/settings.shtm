@@ -1,0 +1,297 @@
+<!doctype html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+
+	</head>
+	<body class="settings">		
+		<div class="wrapper">
+			<table>
+				<tr>
+					<td class="header">
+						<table>
+							<tr>
+								<td class="logo-wrap">
+									<img class="logo" src="img/logo.jpg" />
+								</td>
+								<td>
+									<h1 class='page-title'>Settings</h1>
+								</td>
+								<td>
+									<a id="close" class="btn btn-yellow" href="index.shtm"><</a>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td class="docbody">
+					Serial Number: <?--#exec cmd_argument='printf( "%lu", ABCCMessage(254,15,1,5,0,0,NONE,UINT32 ) )'-->
+				<form method="get" id='settings-form' action="/vars/save.settings.shtm">
+					
+						<table>
+							<tr>
+								<td width="50%"  class="top">
+									<table class="datatable">
+										<tr class="even">
+											<td  class="label">
+												Units
+											</td>
+											<td>
+												<a class="unit" id="english" href="/vars/save.settings.shtm?units=0&webStatus=4">English</a> | <a class="unit" id="metric" href="/vars/save.settings.shtm?units=1&webStatus=4">Metric</a>
+											</td>
+										</tr>
+										<tr class="odd">
+											<td  class="label">
+												Min Flow <span id="minFlow-units" class="units"></span>
+											</td>
+											<td>
+												<select id="minFlow" name="minFlow"></select>
+											</td>
+										</tr>
+										<tr class="even">
+											<td  class="label">
+												Flow Ok <span id="flowOk-units" class="units"></span>
+											</td>
+											<td>
+												<select id="flowOk" name="flowOk"></select>
+											</td>
+										</tr>
+										<tr class="odd">
+											<td  class="label">
+												Leak Rate <span id="leak-units" class="units"></span>
+											</td>
+											<td>
+												<select id="leakRate" name="leakRate"></select>
+											</td>
+										</tr>
+										
+										<tr class="even">
+											<td  class="label">
+												Venturi Timer <span id="venturi-units" class="units"></span>
+											</td>
+											<td>
+												<select id="venturiTimer" name="venturiTimer" />
+											</td>
+										</tr>
+										
+									</table>
+								</td>
+								<td class="tborder"></td>
+								<td  width="49%" class="top">
+									<table class="datatable datatable2">
+										<tr class="even">
+											<td  class="label">
+												
+											</td>
+											<td>
+												
+											</td>
+										</tr>
+										<tr class="odd">
+											<td  class="label">
+												Over Temp. <span id="temp-units" class="units"></span>
+											</td>
+											<td>
+												<select id="overTemp" name="overTemp" />
+											</td>
+										</tr>
+										<tr class="even">
+											<td  class="label">
+												Response Time <span id="response-units" class="units"></span>
+											</td>
+											<td>
+												<select id="responseTime" name="responseTime" />
+											</td>
+										</tr>
+										<tr class="odd">
+											<td  class="label">
+												Restart Delay <span id="delay-units" class="units"></span>
+											</td>
+											<td>
+												<select id="restartDelay" name="restartDelay" />
+											</td>
+										</tr>
+                                        
+                                        <tr class="even">
+											<td  class="label">
+												Under Temp.<span id="under-temp-units" class="units"></span>
+											</td>
+											<td>
+												<select id="underTemp" name="underTemp" />
+											</td>
+										</tr>
+
+									</table>
+									<input type="hidden" name="webStatus" id="webStatus-hidden" value="0" />
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td class="footer">
+						<table>
+							<tr>
+								<td>
+									<a href="network.shtm" style="margin-left:15px" type="submit" class="btn btn-blue" >Network</a>
+								</td>
+								<td>
+									&nbsp;
+								</td>
+								<td colspan="2">
+									<input id="settings-save" type="submit" class="btn btn-blue" onclick="webStats()" value="Save" />
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				</form>
+			</table>
+		</div>
+		<script type="text/javascript">
+	
+			units = "<?--#exec cmd_argument='printf( "%u", ABCCMessage(254,12,1,5,0,0,NONE,UINT8 ) )'-->";
+			minFlow = "<?--#exec cmd_argument='printf( "%u", ABCCMessage(254,7,1,5,0,0,NONE,UINT16 ) )'-->";
+
+			flowOk = "<?--#exec cmd_argument='printf( "%u", ABCCMessage(254,8,1,5,0,0,NONE,UINT16 ) )'-->";
+			leakRate = "<?--#exec cmd_argument='printf( "%u", ABCCMessage(254,9,1,5,0,0,NONE,UINT16 ) )'-->";
+			overTemp = "<?--#exec cmd_argument='printf( "%u", ABCCMessage(254,10,1,5,0,0,NONE,UINT16 ) )'-->";
+			venturiTimer = "<?--#exec cmd_argument='printf( "%u", ABCCMessage(254,23,1,5,0,0,NONE,UINT16 ) )'-->";
+			responseTime = "<?--#exec cmd_argument='printf( "%u", ABCCMessage(254,11,1,5,0,0,NONE,UINT8 ) )'-->";
+			restartDelay = "<?--#exec cmd_argument='printf( "%u", ABCCMessage(254,16,1,5,0,0,NONE,UINT16 ) )'-->";
+			webStatus = "<?--#exec cmd_argument='printf( "%u", ABCCMessage(254,13,1,5,0,0,NONE,UINT16 ) )'-->" ;
+            underTemp = "<?--#exec cmd_argument='printf( "%u", ABCCMessage(254,6,1,5,0,0,NONE,UINT16 ) )'-->";
+			// Set Units
+			if (units == 0) {
+				
+				document.getElementById('english').className = "unit selected";
+				
+				document.getElementById('minFlow-units').innerHTML = "GPM";
+				document.getElementById('flowOk-units').innerHTML = "GPM";
+				document.getElementById('leak-units').innerHTML = "GPM";
+				document.getElementById('temp-units').innerHTML = "F&deg;";
+				document.getElementById('under-temp-units').innerHTML = "F&deg;";
+				document.getElementById('response-units').innerHTML = "S";
+				document.getElementById('delay-units').innerHTML = "S";
+				document.getElementById('venturi-units').innerHTML = "S";
+				
+				buildSelect('minFlow', .8, 11.5, .1, minFlow,1, 100);
+				buildSelect('flowOk', 1.0, 12.0, .1, flowOk, 1, 100);
+				buildSelect('leakRate', .5, 1.0, .1, leakRate, 1, 100);
+				buildSelect('overTemp', 45, 210, 1, overTemp, 0);
+				buildSelect('underTemp', 40, 205, 1, underTemp, 0);
+				buildSelect('responseTime', .1, 3.1, .1, responseTime, 1, 10);
+				buildSelect('restartDelay', 1, 30, 1, restartDelay, 0, 10);	
+				buildSelect('venturiTimer',0,999,1,venturiTimer,0,1);				
+                
+			} else {
+				document.getElementById('metric').className = "unit selected";
+
+				document.getElementById('minFlow-units').innerHTML = "LPM";
+				document.getElementById('flowOk-units').innerHTML = "LPM";
+				document.getElementById('leak-units').innerHTML = "LPM";
+				document.getElementById('temp-units').innerHTML = "C&deg;";
+				document.getElementById('under-temp-units').innerHTML  = "C&deg;";
+				document.getElementById('response-units').innerHTML = "S";
+				document.getElementById('delay-units').innerHTML = "S";
+				document.getElementById('venturi-units').innerHTML = "S";
+				
+				buildSelect('minFlow', 3.0, 45.5, .1, minFlow,1, 100);
+				buildSelect('flowOk', 3.8, 43.4, .1, flowOk, 1, 100);
+				buildSelect('leakRate', 1.9, 3.8, .1, leakRate, 1, 100);
+				buildSelect('overTemp', 7.2, 98.9, 1, overTemp, 0);
+				buildSelect('underTemp', 4, 96, 1, underTemp, 0);
+				buildSelect('responseTime', .1, 3.1, .1, responseTime, 1, 10);
+				buildSelect('restartDelay', 1, 30, 1, restartDelay, 0, 10);
+				buildSelect('venturiTimer',0,999,1,venturiTimer,0,1);	
+			}
+			
+
+			function webStats() {
+
+				form = document.getElementById('settings-form'); 
+				bitSet = 0;
+				
+				if (document.getElementById('minFlow').value != minFlow) {
+					bitSet += 8;
+				}
+				
+				if (document.getElementById('flowOk').value != flowOk) {
+					bitSet += 16;
+				}
+
+				if (document.getElementById('leakRate').value != leakRate) {
+					bitSet += 32;
+				}
+				
+				if (document.getElementById('overTemp').value != overTemp) {
+					bitSet += 64;
+				}
+
+				if (document.getElementById('responseTime').value != responseTime) {
+					bitSet += 128;
+				}
+				
+				if (document.getElementById('restartDelay').value != restartDelay) {
+					bitSet += 256;
+				}
+                
+                if (document.getElementById('underTemp').value != underTemp) {
+					bitSet += (1 << 14);
+				}
+
+				if (document.getElementById('venturiTimer').value != venturiTimer) {
+					bitSet += 32768;
+				}
+				//Change the web status bit to reflect the change in the settings from the browser
+				
+				document.getElementById('webStatus-hidden').value |=  bitSet;
+				form.submit();
+			}
+
+			// Build minFlow select
+
+			// id = element id
+			// start = what does the select start at
+			// end = select end value
+			// inc = select increment
+			// value = value the setting is currently set at
+			// per = how many decmials
+			// multi = value multiplyer
+
+			
+			function buildSelect(id, start, end, inc, value, per, multi) {
+				element = document.getElementById(id);
+				var option = null;
+				var value = parseFloat(value);
+
+				if (multi == 100) {
+					value = Math.floor((value / 10 +.5)) * 10 / multi;
+				} 
+				if (multi == 10) {
+					value = ( value / multi );
+				}
+
+				for (var i=start; i <= end; i= i + inc) {
+
+					if (multi) {
+						if (value.toFixed(per) != i.toFixed(per) ) {
+							element.options[element.options.length] = new Option(i.toFixed(per), parseInt(i.toFixed(per)*multi));
+						} else {
+							element.options[element.options.length] = new Option(i.toFixed(per), parseInt(i.toFixed(per)*multi), true, true);
+						}
+					
+					} else {
+						if (value.toFixed(per) != i.toFixed(per)) {
+							element.options[element.options.length] = new Option(i.toFixed(per), i.toFixed(per));
+						} else {
+								element.options[element.options.length] = new Option(i.toFixed(per), i.toFixed(per), true, true);
+						}
+					}
+
+				}
+			}
+		</script>
+	</body>
+</html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+	<head>
+		<title>ROCON DeltaPoint</title>
+		<style>
+		.visible {
+			
+		}
+		#loading p {
+			padding:30px;
+		}
+		.hidden {
+			display: none;
+		}
+		#loading {
+			width: 100%;
+			height:100%;
+		}
+		#loading #bar {
+			text-align: center;
+			font-size:16px;
+			color:#fff;
+		}
+		#loading h1 {
+			color : #fff;
+			font-size:30px;
+			text-align: center;
+		}
+		</style>
+		<link rel="stylesheet" type="text/css" href="/css/style.css">
+		<script type="text/javascript" src="/js/json3.min.js"></script>
+	</head>
+	<body class="home">
+		<!-- SET VARS -->
+		<!--#if expr="$QUERY_STRING = /WebStatus=([a-zA-Z0-9]+)/" -->
+			<div class="webstatus"><?--#exec cmd_argument='scanf("WebStatus", "%u", ABCCMessage(254,13,2,5,0,ARG,UINT16,NONE ) )'--></div>
+		<!--#endif -->
+	</body>
+	<script type="text/javascript">
+		window.location.href = "/";
+	</script>
+</html>

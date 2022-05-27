@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+	</head>
+	<body class="bitmap">
+		<div class="wrapper">
+			<table>
+				<tr>
+					<td class="header">
+						<table>
+							<tr>
+								<td class="logo-wrap">
+									<img class="logo" src="img/logo.jpg" />
+								</td>
+								<td>
+									<h1 class='page-title'>Error</h1>
+								</td>
+								<td>
+									<a id="close" class="btn btn-yellow" href="index.shtm">X</a>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td class="docbody">
+						<h1 style="color:red">Error communicating with the server. Please contact an administrator.</h1>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</body>
+</html>

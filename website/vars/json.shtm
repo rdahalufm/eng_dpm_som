@@ -1,0 +1,8 @@
+{
+	"temperature" : <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,4,1,5,0,0,NONE,UINT8 ) )'-->,
+	"flowToGun" : <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,17,1,5,0,0,NONE,UINT16 ) )'-->,
+	"flowFromGun" : <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,18,1,5,0,0,NONE,UINT16 ) )'-->,
+	"inputByte" : <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,1,1,5,0,0,NONE,UINT8 ) )'-->,
+	"outputByte" : <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,5,1,5,0,0,NONE,UINT8 ) )'-->,
+	"webstatus" : <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,13,1,5,0,0,NONE,UINT16 ) )'-->
+}

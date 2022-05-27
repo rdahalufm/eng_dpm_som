@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+		<script type="text/javascript">
+			func = {
+				bit : {	// Basic bit testing functions
+					test:function(num,bit){
+						return ((num>>bit) % 2 != 0)
+					},
+					set:function(num,bit){
+						return num | 1<<bit;
+					},
+					clear:function(num,bit){
+						return num & ~(1<<bit);
+					},
+					toggle:function(num,bit) {
+						return this.test(num,bit)?this.clear(num,bit):this.set(num,bit);
+					}
+				},
+				process : {
+					webstatus : function(value) {
+						form = document.getElementById('input'); 
+						element = document.getElementById('webstatus');
+						element.value = value;
+
+						form.submit();
+					}
+				}
+			};
+
+			uf = {
+				settings : {
+					webstatus : <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,13,1,5,0,0,NONE,UINT16 ) )'-->
+				}
+			};
+		</script>
+	</head>
+	<body class="reset">
+		<form id="input" action="/vars/save.status.shtm" method="get">
+			<input id="webstatus" name="webstatus" type="hidden" />
+		</form>
+
+		<!-- SET VARS -->
+		<!--#if expr="$QUERY_STRING = /WebStatus=([a-zA-Z0-9]+)/" -->
+			<div class="webstatus"><?--#exec cmd_argument='scanf("WebStatus", "%u", ABCCMessage(254,13,2,5,0,ARG,UINT16,NONE ) )'--></div>
+			<script>//window.location.href = "index.shtm" </script>
+		<!--#endif -->
+
+		<div class="wrapper">
+			<table>
+				<tr>
+					<td class="header">
+						<table>
+							<tr>
+								<td class="logo-wrap">
+									<img class="logo" src="img/logo.jpg" />
+								</td>
+								<td>
+									<h1 class='page-title'>Reset</h1>
+								</td>
+								<td>
+									<a id="close" class="btn btn-yellow" href="index.shtm"><</a>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td class="docbody">
+						<p style="text-align:center">Are you sure you would like to reset?</p>
+						<table>
+							<tr>
+								<td style="width:48.5%">
+									<a href="#" class="btn btn-blue" onclick="func.process.webstatus(func.bit.set(uf.settings.webstatus, 11))" >Yes</a>
+								</td>
+								<td width:"3%">
+
+								</td>
+								<td style="width:48.5%">
+									<a href="index.shtm" class="btn btn-yellow">No</a>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</body>
+</html>

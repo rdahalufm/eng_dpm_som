@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <!--<meta http-equiv="refresh" content="5">-->
+        <title>ROCON DeltaPoint</title>
+    </head>
+    <body>
+    	<div align="center">
+        <h1>ROCON DeltaPoint Test</h1>    		
+			 <table border="1">
+			 	<tr>
+			 	<th>Supply: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,2,1,5,0,0,NONE,UINT8  ) )'--></td>
+			 	</tr>
+			 	<tr>
+			 	<th>Return: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,3,1,5,0,0,NONE,UINT8  ) )'--></td>
+			 	</tr>		
+			 	<tr>
+			 	<th>Temperature: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,4,1,5,0,0,NONE,UINT8  ) )'--></td>
+			 	</tr>
+			 	<tr>
+			 	<th>IP Address: </th><td><?--#exec cmd_argument='printf( "%u.%u.%u.%u", ABCCMessage(4,3,1,5,0,0,NONE,UINT8[4] ) )'--></td>
+			 	</tr>
+			 	<tr>
+			 	<th>SMask: </th><td><?--#exec cmd_argument='printf( "%u.%u.%u.%u", ABCCMessage(4,4,1,5,0,0,NONE,UINT8[4] ) )'--></td>
+			 	</tr>	
+			 	<tr>
+			 	<th>Units: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,12,1,5,0,0,NONE,UINT8  ) )'--></td>
+			 	</tr>			 				 				 						 		 	
+			 	<tr>
+			 	<th>Min Flow: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,7,1,5,0,0,NONE,UINT16  ) )'--></td>
+			 	</tr>
+			 	<tr>
+			 	<th>Flow OK: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,8,1,5,0,0,NONE,UINT16  ) )'--></td>
+			 	</tr>
+			 	<tr>
+			 	<th>Leak Rate: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,9,1,5,0,0,NONE,UINT16  ) )'--></td>
+			 	</tr>
+			 	<tr>
+			 	<th>Over Temp: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,10,1,5,0,0,NONE,UINT16 ) )'--></td>
+			 	</tr>
+			 	<tr>
+			 	<th>Response Time: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,11,1,5,0,0,NONE,UINT8 ) )'--></td>
+			 	</tr>
+			 	<tr>
+			 	<th>Restart Time: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,16,1,5,0,0,NONE,UINT8 ) )'--></td>
+			 	</tr>
+			 	<tr>
+			 	<th>Firmware: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,14,1,5,0,0,NONE,UINT16 ) )'--></td>
+			 	</tr>	
+			 	<tr>
+			 	<th>Serial: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,15,1,5,0,0,NONE,UINT32 ) )'--></td>
+			 	</tr>
+			 	<tr>
+			 	<th>MAC: </th><td><?--#exec cmd_argument='printf( "%2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X", ABCCMessage(12,1,1,1,0,0,NONE,UINT8[6] ) )'--></td>
+			 	</tr>
+			 	<tr>
+			 	<th>Input Byte: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,1,1,5,0,0,NONE,UINT8 ) )'--></td>
+			 	</tr>
+			 	<tr>
+			 	<th>Output Byte: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,5,1,5,0,0,NONE,UINT8 ) )'--></td>
+			 	</tr>			 				 				 				 				 				 	
+			 	<tr>
+			 	<th>Web Status: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,13,1,5,0,0,NONE,UINT16 ) )'--></td>
+			 	</tr>
+			 	<tr>
+			 	<th>Web Supply: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,17,1,5,0,0,NONE,UINT16 ) )'--></td>
+			 	</tr>			 	
+			 	<tr>
+			 	<th>Web Return: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,18,1,5,0,0,NONE,UINT16 ) )'--></td>
+			 	</tr>
+			 	<tr>
+			 	<th>Exception Code: </th><td><?--#exec cmd_argument='printf( "%s", ABCCMessage(1,1,1,6,0,0,NONE,ENUM ) )'--></td>
+			 	</tr>	
+			 	<tr>
+			 	<th>Diagnostic Objects: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(2,0,1,3,0,0,NONE,UINT16 ) )'--></td>
+			 	</tr>
+			 	<tr>
+			 	<th>Diagnostic Object 1: </th><td><?--#exec cmd_argument='printf( "%u", ABCCMessage(2,1,1,1,0,0,NONE,UINT8 ) )'--></td>
+			 	</tr>	
+			 	<tr>
+			 	<th>Error Counters:(DC:DR:SE:FE) </th><td><?--#exec cmd_argument='printf( "%u:%u:%u:%u", ABCCMessage(1,1,1,8,0,0,NONE,UINT16[4] ) )'--></td>
+			 	</tr>		
+			 	<tr>
+			 	<th>DC:Discarded Commands, DR:unexpected responses </th><th>SE:Serial reception Errors, FE:Fragmentation Errors</th>
+			 	</tr>	 
+			 </table>
+			 <br>
+			 <br>
+		</div>
+
+    </body>
+</html>

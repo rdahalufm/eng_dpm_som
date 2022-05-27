@@ -1,0 +1,386 @@
+<!doctype html>
+<html>
+	<head>
+		<title>ROCON DeltaPoint</title>
+		<style>
+			.visible {
+
+			}
+			#loading p {
+				padding:30px;
+			}
+			.hidden {
+				display: none;
+			}
+			#loading {
+				width: 100%;
+				height:100%;
+			}
+			#loading #bar {
+				text-align: center;
+				font-size:16px;
+				color:#fff;
+			}
+			#loading h1 {
+				color : #fff;
+				font-size:30px;
+				text-align: center;
+			}
+		</style>
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+		<script type="text/javascript" src="/js/json3.min.js"></script>
+	</head>
+	<body class="home" onload="workIt()">
+		<div id="loading" class="visible wrapper">
+			<p style="text-align:center"><img class="logo" src="img/logo.jpg" /></p>
+			<h1>Loading</h1>
+			<p id="bar">Progress .</p>
+		</div>
+		<script type="text/javascript">
+			function loading(counter) {
+				if (counter == 10)
+					document.getElementById('bar').innerHTML = '.';
+				else
+					document.getElementById('bar').innerHTML = document.getElementById('bar').innerHTML + '.';
+			}
+			counter = 0;
+			var loadLoop = setInterval(function() {
+				loading(counter);
+				counter++;
+				if(counter > 10)
+					counter = 0;
+			}, 100);
+		</script>
+		<div id="docBody" class="hidden">
+
+			<form id="input" action="/vars/save.status.shtm" method="get">
+				<input id="webstatus" name="webstatus" type="hidden" />
+			</form>
+
+
+
+
+			<div id="page-wrapper" class="wrapper">
+				<table>
+					<tr>
+						<td class="header">
+							<table>
+								<tr>
+									<td>
+										<a id="reset" class="btn btn-yellow" href="reset.shtm">Reset</a>
+									</td>
+									<td>
+										<a id="valve" class="btn btn-green" onclick="process_webstatus(bit_set(webstatus, 10))" href="#">Valve: <span id="valve-value" class="status"></span>
+										</a>
+									</td>
+									<td>
+										<a id="bypass" class="btn btn-green" href="#" onclick="process_webstatus(bit_set(webstatus, 9))">BYPASS: <span id="bypass-value" class="status"></span></a>
+									</td>
+									<td>
+										<img class="logo" src="img/logo.jpg" />
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+
+
+					<tr>
+						<td id="doc-body-id" class="docbody">
+							<table cellpadding=0 cellspacing=0>
+								<tr height="35px">
+
+									<!-- Add Venturi Valve Display Here -->
+									<td style = "padding:10px">
+										<a id="venturi" class="btn btn-green" href ="#">Venturi:<span id="venturi-value" class="status"></span>
+										</a>
+									</td>
+									<!-- Venturi valve display end  -->
+									<td class="w2"></td>
+									<td colspan="1">
+										<div id="flow-status">
+											<span>Flow Status:</span><span id="flow-status-value">OK</span>
+										</div>
+									</td>
+									<td class="w2"></td>
+								</tr>
+								<tr>
+									<td colspan="2" id="flow-to-gun" class="w5"><span id="flow-to-gun-value"><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,2,1,5,0,0,NONE,UINT8 ) )'--> GPM</span></td>
+									<td colspan="2" id="flow-from-gun"  class="w5"><span id="flow-from-gun-value"><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,3,1,5,0,0,NONE,UINT8 ) )'--> GPM</span></td>
+								</tr>
+								<tr height="35px">
+									<td class="w2"></td>
+									<td colspan="2">
+										<div id="water-temp">
+											<span>Water Temp : </span><span id="water-temp-value"><?--#exec cmd_argument='printf( "%u", ABCCMessage(254,4,1,5,0,0,NONE,UINT8 ) )'-->&deg;</span><span id="units">F</span>
+										</div>
+									</td>
+									<td class="w2"></td>
+								</tr>
+								<tr height="5px">
+									<td colspan="4"></td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					<tr>
+						<td class="footer">
+							<table>
+								<tr>
+									<td>
+										<a class="btn btn-blue" href="settings.shtm">Settings</a>
+									</td>
+									<td>
+										<a class="btn btn-blue" href="bitmap.shtm">BITMAP</a>
+									</td>
+									<td colspan="2">
+										<span id="communications" class="btn btn-green" href="#">Profinet Comm: <span id="communications-status">Active</span></span>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<script type="text/javascript" src="/js/functions.js"></script>
+
+		<script type="text/javascript">
+
+
+			var ajax = 1;
+
+			var flowOk = 0;
+            var minFlow = 0;
+            var leakRate = 0;
+            var faultTemp = 0;
+            var responseTime = 0;
+            var engineeringUnits = 0;
+            var webstatus = 0;
+            var flowStatus = 0;
+            var temperature = 0;
+            var flowToGun = 0;
+            var flowFromGun = 0;
+            var inputByte = 0;
+            var outputByte = 0;
+
+
+
+            flowOk = <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,8,1,5,0,0,NONE,UINT8 ) )'-->;
+            minFlow = <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,7,1,5,0,0,NONE,UINT8 ) )'-->;
+
+            leakRate = <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,9,1,5,0,0,NONE,UINT8 ) )'-->;
+            faultTemp = <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,6,1,5,0,0,NONE,UINT8 ) )'-->;
+            responseTime = <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,11,1,5,0,0,NONE,UINT8 ) )'-->;
+            engineeringUnits= <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,12,1,5,0,0,NONE,UINT8 ) )'-->;
+            webstatus = <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,13,1,5,0,0,NONE,UINT16 ) )'-->;
+            flowStatus = <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,8,1,5,0,0,NONE,UINT8 ) )'-->;
+            temperature= <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,4,1,5,0,0,NONE,UINT8 ) )'-->;
+            flowToGun = <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,17,1,5,0,0,NONE,UINT16 ) )'-->;
+            flowFromGun = <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,18,1,5,0,0,NONE,UINT16 ) )'-->;
+            inputByte = <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,1,1,5,0,0,NONE,UINT8 ) )'-->;
+            outputByte = <?--#exec cmd_argument='printf( "%u", ABCCMessage(254,5,1,5,0,0,NONE,UINT8 ) )'-->;
+
+
+			var error = 0;
+			var errorTmp = 0;
+			var json_var = new XMLHttpRequest();
+			var replyText;
+			var errorMsg;
+			var retry = GetUrlValue('retry');
+			var retryCount = 0;
+
+			function init() {
+				var un;
+				var flowToGunTmp;
+				var flowFromGunTmp;
+				var ajax_data;
+				var invalidData;
+
+
+				// If we get more than 30 errors.
+				if (error > 30) {
+					clearInterval(looper);
+					// If we retried already redirect to the error page
+					if (retry == 1)
+						window.location.href = "/error.shtm";
+					// If we haven't retried redirect to the retry page
+					else
+						window.location.href = "/index.shtm?retry=1";
+				}
+
+
+				if (ajax) {
+					json_var.open('GET', 'vars/json.shtm');
+					json_var.timeout = 950;
+					json_var.ontimeout = function () {
+						error++;
+						errorMsg = "Timeout";
+						json_var.abort();
+						replyText = null;
+					}
+					json_var.onreadystatechange = function() {
+
+					  //this.values.flowFromGun = flowFromGun.responseText; // grab updated flow value
+						if (json_var.readyState==4 && (json_var.status==200 || json_var.status == 304)) {
+
+                            // If there is a 304 response header, find the data from the local cache
+
+                            try {
+                                replyText = json_var.responseText;
+                                ajax_data = JSON.parse(json_var.responseText);
+                            } catch (e) {
+                                error++;
+                                errorMsg = "Invalid Json";
+                            }
+
+							if (typeof ajax_data === 'object') {
+								if (isInt(ajax_data.temperature)) {
+									temperature = ajax_data.temperature
+								} else {
+									invalidData = 1;
+								}
+
+								if (isInt(ajax_data.flowToGun)) {
+									flowToGun = ajax_data.flowToGun
+								} else {
+									invalidData = 1;
+								}
+
+								if (isInt(ajax_data.flowFromGun)) {
+									flowFromGun = ajax_data.flowFromGun
+								} else {
+									invalidData = 1;
+								}
+
+								if (isInt(ajax_data.inputByte)) {
+									inputByte = ajax_data.inputByte
+								} else {
+									invalidData = 1;
+								}
+
+								if (isInt(ajax_data.outputByte)) {
+									outputByte = ajax_data.outputByte
+								} else {
+									invalidData = 1;
+								}
+
+								if (isInt(ajax_data.webstatus)) {
+									webstatus = ajax_data.webstatus;
+								} else {
+									invalidData = 1;
+								}
+
+								if (invalidData) {
+									error++;
+									errorMsg = "Invalid Int";
+								} else {
+									error =0;
+								}
+							} else {
+								error++;
+								errorMsg = "Not type of Object";
+								replyText = ajax_data; // Why is this not an object
+							}
+
+							json_var.abort();
+						}
+					}
+
+					json_var.send();
+				}
+			// Set bits.
+			var bits = {
+				weld: 		bit_test(inputByte, 0),
+				valve: 		bit_test(inputByte, 1),
+				bypass: 	bit_test(inputByte, 2),
+				minFlow: 	bit_test(inputByte, 3),
+				returnLeak: bit_test(inputByte, 4),
+				tempFault: 	(bit_test(inputByte, 6) | bit_test(inputByte, 5)),
+				communications : bit_test(webstatus, 12),
+				venturiValve: bit_test(webstatus, 13)
+			}
+			/*
+			if ( bit_test(webstatus, 13) ) {
+				flowToGunTmp = parseInt(flowToGun) / 10;
+				flowFromGunTmp = parseInt(flowFromGun) / 10;
+				flowToGunTmp = flowToGunTmp.toFixed(1);
+				flowFromGunTmp = flowFromGunTmp.toFixed(1);
+
+			} else if ( bit_test(webstatus, 14) ) {
+				flowToGunTmp = parseInt(flowToGun) / 100;
+				flowFromGunTmp = parseInt(flowFromGun) / 100;
+
+				flowToGunTmp = flowToGunTmp.toFixed(2);
+				flowFromGunTmp = flowFromGunTmp.toFixed(2);
+			} else {
+				flowToGunTmp = flowToGun;
+				flowFromGunTmp = flowFromGun;
+			}
+			*/
+
+			flowToGunTmp = parseInt(flowToGun) / 100;
+			flowFromGunTmp = parseInt(flowFromGun) / 100;
+			flowToGunTmp = flowToGunTmp.toFixed(1);
+			flowFromGunTmp = flowFromGunTmp.toFixed(1);
+
+			if(engineeringUnits) {
+				un = ' LPM';
+			} else {
+				un = ' GPM';
+			}
+
+			document.getElementById('flow-to-gun-value').innerHTML = flowToGunTmp + un //.toFixed(2);
+			document.getElementById('flow-from-gun-value').innerHTML = flowFromGunTmp + un; //.toFixed(2)
+			document.getElementById('water-temp-value').innerHTML = temperature;
+
+			// Update screen.
+			display_venturi(bits.venturiValve);
+			display_valve(bits.valve);
+			display_bypass(bits.bypass);
+			display_tempFault(bits.tempFault);
+			display_weld(bits.weld, bits.minFlow, bits.returnLeak, bits.valve);
+			display_units(engineeringUnits);
+			display_communications(bits.communications);
+
+			// Are we in retry mode?
+			if (retry == 1) {
+
+				// If no errors
+				if (error) {
+					retryCount = 0;
+				} else {
+					retryCount ++;
+				}
+				// If no errors, redirect to the homepage to reset the retry.
+				if (retryCount > 5) {
+					window.location.href = "/index.shtm";
+				}
+			}
+
+			delete json_var;
+			delete bits;
+			delete ajax_data;
+			delete un;
+			delete flowToGunTmp;
+			delete flowFromGunTmp;
+
+		}
+		</script>
+
+		<script type="text/javascript">
+
+			init();
+			function workIt() {
+				clearInterval(loadLoop);
+				looper = setInterval(function() {
+					init();
+				}, 1200);
+			}
+			document.getElementById('loading').className = "hidden";
+			document.getElementById('docBody').className = "";
+
+
+		</script>
+	</body>
+</html>

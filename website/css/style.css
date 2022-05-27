@@ -1,0 +1,452 @@
+table {
+	padding:0px;
+	margin:0px;
+	width:100%;
+	height:100%;
+	text-align: center;
+	border-spacing: 0;
+    border-collapse: collapse;
+    border:0px;
+}
+table td {
+	border-spacing: 0;
+	border-collapse: collapse;
+	margin:0px;
+	padding:0px;
+}
+
+html {
+	font-size:16px;
+	font-weight:600;
+	font-family: Arial;
+	font-weight: bold;
+}
+html, body, .wrapper {
+	width:632px;
+	height:367px;
+	margin:0px;
+	padding:0px;
+	margin:0px auto;
+}
+.wrapper {
+	background:#282828;
+}
+body {
+	font-size:.9em;
+}
+
+.header, .footer {
+	height:45px;
+}
+.docbody {
+	height:60%;
+	padding:0px;
+}
+.header {
+	border-bottom:1px solid #000;
+}
+.footer {
+	border-top:1px solid #000;
+}
+.home .header table td {
+	width:25%;
+	text-align: center;
+	vertical-align: middle;
+	padding:1%;
+}
+.home .footer table td {
+	text-align: center;
+	vertical-align: middle;
+	padding:1%;
+}
+.btn {
+	height:50px;
+	line-height: 50px;
+	display: block;
+	color:#000;
+	text-decoration: none;
+	background:blue;
+	vertical-align:middle;
+	text-transform: uppercase;
+	font-size:16px;
+}
+.btn:hover {
+	cursor: pointer;
+}
+.btn span.status {
+	color:#fff;
+}
+#flow-status, #water-temp,#venturi-status {
+	display: block;
+	width:80%;
+	height:80%;
+	font-weight:normal;
+}
+
+#flow-status #flow-status-value, #water-temp #water-temp-value,#venturi-status #venturi-status-value {
+	font-weight:400;
+	font-size:30px;
+}
+
+
+#flow-status {
+	background: url(../img/green.png) left bottom repeat-x #1f622d;
+	color:#fff;
+	padding:0px 0px 0px 0px;
+	border:3px solid #1F622D;
+}
+#flow-status span {
+	display: inline-block;
+}
+
+#venturi-status {
+	background: url(../img/green.png) left bottom repeat-x #1f622d;
+	color:#fff;
+	padding:2.5% 0px 0px 0px;
+	border:3px solid #1F622D;
+}
+
+#venturi-status span {
+	display: inline-block;
+}
+
+#water-temp {
+	background:#fff;
+	color:#1f622d;
+	padding:2.5% 0px 2.5% 0px;
+	vertical-align: middle;
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+#flow-to-gun {
+	background:url(../img/flow-to-gun.jpg) no-repeat #121212 right center;
+}
+#flow-from-gun  {
+	background:url(../img/flow-from-gun.jpg)  no-repeat #121212 left center;
+}
+
+#flow-to-gun.error {
+	background:url(../img/supply-to-gun-error.jpg) no-repeat #c41a00 right center;
+}
+#flow-from-gun.error  {
+	background:url(../img/return-from-gun-error.jpg) no-repeat #c41a00 left center;
+}
+
+#flow-to-gun-value, #flow-from-gun-value {
+	font-size:35px;
+	margin-top:7px;
+}
+#flow-to-gun-value {
+	float:left;
+}
+#flow-from-gun-value {
+	float:right;
+}
+
+.logo {
+	width:100%;
+	max-width:145px;
+}
+
+.w0 {
+	width:5%;
+}
+
+.w1 {
+	width:10%;
+}
+.w2 {
+	width:20%;
+}
+.w3 {
+	width:30%;
+}
+.w4 {
+	width:40%;
+}
+.w5 {
+	width:50%
+}
+
+#reset {
+	
+}
+.btn-yellow {
+	background:url(../img/yellow.png) #d4a20b;
+	border:3px solid #967413;
+}
+.btn-green {
+	background:url(../img/green.png) #1f622d;
+	border:3px solid #1f622d;
+}
+.btn-blue {
+	background:url(../img/blue.png) #267296;
+	border:3px solid #184153;
+	color:#fff;
+}
+
+#flow-status.error, #water-temp.error, #communications.error, #valve.error,#bypass.error,#venturi.error  {
+	background:url(../img/red.png) left bottom repeat-x #c20000;
+	color:#fff;
+	border:2px solid #c20000;
+}
+
+#flow-status.error span {
+	font-weight: bold;
+}
+#venturi-status.error span {
+	font-weight: bold;
+}
+#close {
+	width:30px;
+	height:30px;
+	line-height: 30px;
+	vertical-align: middle;
+	text-align: center;
+	margin:0px auto;
+	float:right;
+}
+input.btn {
+	height:auto;
+}
+.settings .header td, .settings .footer td {
+	width:33%;
+	text-align: center;
+}
+.page-title {
+	color:#fff;
+	margin:0px;
+	padding:0px;
+	text-align: center;
+}
+#settings-save {
+	float:right;
+}
+.pager {
+	float:left;
+}
+.bitmap .docbody table td {
+	border:1px solid #A3A3A3;
+	text-align: left;
+	font-size:12px;
+	font-weight:300;
+	padding:0px 5px 0px 5px;
+}
+.bitmap .docbody {
+	padding:0;
+}
+.reset p {
+	color:#fff;
+}
+.reset .docbody table {
+	height:auto;
+}
+span#units {
+	font-size:30px;
+}
+#flow-to-gun, #flow-from-gun {
+	border:3px solid #fff !important;
+	color:#fff;
+	padding:2% 2.5% 2% 2.5%;
+}
+#flow-status span,  #water-temp span, #venturi-status span {
+	line-height:34px;
+	padding:0px;
+	margin:0px;
+	vertical-align: middle;
+	font-size: 21px;
+}
+.settings input[type=text], .settings select {
+	width:100%;
+}
+.settings .docbody table td {
+	text-align: left;
+	padding:5px;
+}
+table.datatable td {
+	background:#DBDBDB;
+}
+table.datatable tr.odd td {
+	background:#eee;
+}
+.tborder {
+	border-right:1px solid #eee;
+	width:1px;
+	margin:0px !important;
+	padding:0px !important;
+}
+body .header td.logo-wrap {
+	text-align:left;
+}
+.settings .header td, .reset .header td {
+	width:33%;
+}
+.datatable {
+	color:#000;
+}
+.settings .docbody {
+	background:#B1B1B1
+}
+.webstatus {
+	display: none;
+}
+
+.settings .docbody {
+	background: #B1B1B1;
+}
+
+table.datatable tr.odd td {
+	background: #292929;
+	color: #D6D6D6;
+}
+
+table.datatable td {
+	background: #E6E6E6;
+	color: #000000;
+}
+
+.tborder {
+	border-right: 1px solid #424242;
+	border-left: 1px solid #000;
+	width: 0px;
+	display: none;
+}
+
+#close {
+	line-height: 32px;
+	margin-right: 15px;
+}
+
+.header {
+	box-shadow: 0px 1px 1px rgb(109, 109, 109);
+}
+
+.btn-blue {
+	padding: 0 30px;
+	margin-right: 15px;
+}
+
+.settings select {
+	width: 100%;
+}
+
+	.datatable {
+	margin-top: -1px;
+}
+
+table.datatable tr.odd td {
+	background: #CACACA;
+	color: #000;
+}
+
+table.datatable td {
+	background: #D3D3D3;
+	color: #000;
+}
+
+#close {
+	line-height: 32px;
+	margin-right: 15px;
+}
+
+.header {
+	box-shadow: 0px 1px 1px rgb(109, 109, 109);
+}
+.settings .datatable td {
+	width:auto;
+}
+
+.label {
+	width:135px !important;
+}
+.label span {
+	font-size:11px;
+	font-style: italic;
+	color:#636363;
+	font-weight: 300;
+}
+#dashboard {
+	width:100%;
+	height:100%;
+	border:none;
+	overflow: hidden;
+}
+.top {
+	vertical-align: top;
+}
+.datatable2 .label {
+	width:130px;
+}
+.datatable2 select {
+	width:145px;
+}
+
+#flow-status #flow-status-value {
+	margin-left:2px;
+}
+#venturi-status #venturi-status-value {
+	margin-left:2px;
+}
+.warn {
+	background:url(../img/yellow.png) #dfb322 top right repeat-x !important;
+	border:3px solid #dfb322 !important;
+}
+.settings .datatable td {
+	height:35px;
+	line-height: 35px;
+	vertical-align: middle;
+}
+.unit {
+	background:#eee;
+	padding:3px;
+	color:#474343;
+	text-decoration: none
+}
+.unit.selected {
+	font-weight:bold;
+	border:4px solid #000;
+	background:url(../img/blue.png) #dfb322 top right repeat-x !important;
+	color:#fff;
+}
+.valve-value {
+	line-height: 20px;
+}
+.venturi-value {
+	line-height: 20px;
+}
+.bms {
+	font-size:10px;
+	line-height:12px;
+	max-height:20px;
+	text-align: center;
+	color:#fff;
+	background:url(../img/blue.png) #267296;
+	display: block;
+	padding:5px;
+}
+
+.bitmap .docbody table td.micro {
+	width:17px !important;
+	padding:0 5px 0px 5px;
+}
+.bitmap .docbody table td.color {
+	width:20px !important;
+	padding:0 5px 0px 5px;
+}
+.bitmap .logo-wrap {
+	width:140px !important;
+}
+.bitmap .page-title {
+	text-align:left;
+	padding-left:20px;
+}
+
+.bms {
+	font-size:15px;
+	font-weight: 800;
+	font-weight:bold;
+}
+.bitmap .docbody table td.bmshead {
+	padding:0px 5px 0px 5px !important;
+}

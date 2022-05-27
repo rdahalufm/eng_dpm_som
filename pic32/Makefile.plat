@@ -1,0 +1,53 @@
+
+CROSS = avr-
+CC = $(CROSS)gcc
+AS = $(CROSS)as
+FNAME = $(NAME)_$(PLATFORM).elf
+UART = /dev/tty.usbmodem141101
+
+SRC_C += \
+	$(wildcard $(UGOAL)/plat/$(PLATFORM)/*.c)
+
+SRC_S += \
+	$(wildcard $(UGOAL)/plat/$(PLATFORM)/*.s)
+
+INC_C += \
+	$(UGOAL)/plat/$(PLATFORM)
+
+CFLAGS += \
+	-mmcu=atmega2560 \
+	-g \
+	-Og \
+	-ffunction-sections \
+	-fdata-sections \
+	-fno-strict-aliasing \
+	-Wunused-function \
+	-Wstack-usage=512 \
+	-DAPPL_STANDALONE=1 \
+	-Wall
+
+LDFLAGS += \
+	-mmcu=atmega2560 \
+	-Wl,-Map="${FNAME_EXE}.map" \
+	-Wl,--gc-sections \
+	-static \
+	-Wl,--start-group -lc -lm -Wl,--end-group
+
+platform_pre:
+
+
+platform_post:
+	@$(CROSS)size  $(FNAME_EXE)
+	@$(CROSS)objdump -h -S  $(FNAME_EXE) > "build/$(PLATFORM)/som_$(PLATFORM).list"
+	@$(CROSS)objcopy -j .text -j .data -O binary  $(FNAME_EXE) "build/$(PLATFORM)/som_$(PLATFORM).bin"
+	@$(CROSS)objcopy -j .text -j .data -O ihex  $(FNAME_EXE) "build/$(PLATFORM)/som_$(PLATFORM).hex"
+	@$(CROSS)objcopy -j .text -j .data -O srec  $(FNAME_EXE) "build/$(PLATFORM)/som_$(PLATFORM).srec"
+	@$(CROSS)objcopy -j .eeprom --change-section-lma .eeprom=0 -O ihex $(FNAME_EXE) "build/$(PLATFORM)/som_$(PLATFORM)_eeprom.hex" || { echo empty $@ not generated; exit 0; }
+	@$(CROSS)objcopy -j .eeprom --change-section-lma .eeprom=0 -O srec $(FNAME_EXE) "build/$(PLATFORM)/som_$(PLATFORM)_eeprom.srec" || { echo empty $@ not generated; exit 0; }
+	@$(CROSS)objcopy -j .eeprom --change-section-lma .eeprom=0 -O binary $(FNAME_EXE) "build/$(PLATFORM)/som_$(PLATFORM)_eeprom.bin" || { echo empty $@ not generated; exit 0; }
+
+flash: all
+	@avrdude -P $(UART) -p m2560 -c stk500v2 -D -F -U "flash:w:build/$(PLATFORM)/som_$(PLATFORM).hex"
+
+serial:
+	@pyserial-miniterm $(UART) 28800

@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+
+	</head>
+	<body class="settings">
+		
+
+
+		<!--#if expr="$QUERY_STRING = /IP=([a-zA-Z0-9]+)/" -->
+			<div class="webstatus ipAddress"><?--#exec cmd_argument='scanf("IP", "%u.%u.%u.%u", ABCCMessage(254,21,2,5,0,ARG,UINT8[4],NONE ) )'--></div>
+		<!--#endif -->
+
+		<!--#if expr="$QUERY_STRING = /subnet=([a-zA-Z0-9]+)/" -->
+			<div class="webstatus subnet"><?--#exec cmd_argument='scanf("subnet", "%u.%u.%u.%u", ABCCMessage(254,22,2,5,0,ARG,UINT8[4],NONE ) )'--></div>
+		<!--#endif -->
+
+		<!--#if expr="$QUERY_STRING = /WebStatus=([a-zA-Z0-9]+)/" -->
+			<div class="webstatus"><?--#exec cmd_argument='scanf("WebStatus", "%u", ABCCMessage(254,13,2,5,0,ARG,UINT16,NONE ) )'--></div>
+		<!--#endif -->
+		
+		<div class="wrapper">
+			<table>
+				<tr>
+					<td class="header">
+						<table>
+							<tr>
+								<td class="logo-wrap">
+									<img class="logo" src="img/logo.jpg" />
+								</td>
+								<td>
+									<h1 class='page-title'>Settings</h1>
+								</td>
+								<td>
+									<a id="close" class="btn btn-yellow" href="index.shtm"><</a>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td class="docbody">
+				<form method="get" id='settings-form'>
+					<input type="hidden" name="webStatus" id="webStatus-hidden" value="3" />
+						<table>
+							<tr>
+								<td class="top">
+									<table class="datatable">
+										<tr class="odd">
+											<td  class="label">
+												Address<br/>
+												<span>Page will stop responding.</span>
+											</td>
+											<td>
+												<input id="IP" type="text" name="IP" />
+											</td>
+										</tr>
+										<tr class="even">
+											<td  class="label">
+												MAC Address
+											</td>
+											<td>
+												<?--#exec cmd_argument='printf( "%2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X", ABCCMessage(12,1,1,1,0,0,NONE,UINT8[6] ) )'-->
+											</td>
+										</tr>
+										<tr class="odd">
+											<td  class="label">
+												NetMask<br/>
+												<span>Page will stop responding.</span>
+											</td>
+											<td>
+												<input id="subnet" type="text" name="subnet" />
+											</td>
+										</tr>
+									</table>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td class="footer">
+						<table>
+							<tr>
+								<td>
+									<a href="settings.shtm" style="margin-left:15px" type="submit" class="btn btn-blue">Settings</a>
+								</td>
+								<td>
+									&nbsp;
+								</td>
+								<td colspan="2">
+									<input id="settings-save" type="submit" class="btn btn-blue" onclick="webStats();" value="Save" />
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				</form>
+			</table>
+		</div>
+		<script type="text/javascript">
+
+			ipAddress = document.getElementById('IP');
+			subnet = document.getElementById('subnet');
+
+			ipAddress.value = "<?--#exec cmd_argument='printf( "%u.%u.%u.%u", ABCCMessage(4,3,1,5,0,0,NONE,UINT8[4] ) )'-->";
+			subnet.value = "<?--#exec cmd_argument='printf( "%u.%u.%u.%u", ABCCMessage(4,4,1,5,0,0,NONE,UINT8[4] ) )'-->";
+			
+		</script>
+	</body>
+</html>

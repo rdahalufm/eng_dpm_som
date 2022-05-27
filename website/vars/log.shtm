@@ -1,0 +1,1 @@
+<?--#exec cmd_argument='SaveDataToFile("\log.txt", "error", Append)'-->
