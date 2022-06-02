@@ -45,6 +45,9 @@
 
 
 UINT32 SerialNumber = 0xFFFFFFFF;
+#ifdef SOM_UGOAL
+volatile UINT8 IPAddressLocal[4],SMaskLocal[4],MACAddress[6];
+#endif
 
 
 void _mon_putc(char data){
@@ -95,7 +98,7 @@ int main() {
         // Reset the watchdog timer periodically
         CLEAR_WATCHDOG();
         
-//        // This processes the board functionality
+        // This processes the board functionality
         dpm_bsp_task_run();
         
         #if SOM_UGOAL == 1 
@@ -103,7 +106,7 @@ int main() {
         ugoal_loop();
         #endif /* SOM UGOAL */
         
-//        // Run the Chrysler specific application 
+        // Run the Chrysler specific application 
         pnet_app_run();
     }
     

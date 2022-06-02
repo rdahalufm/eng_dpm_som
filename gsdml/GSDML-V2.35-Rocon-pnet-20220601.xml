@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml-stylesheet href="GSDML-Stylesheet-HTML-V2.35.xsl" type="text/xsl"?>
+<!--
+     If you change something here, don't forget to update the CI validation
+     script after changing the filename.
+-->
+<ISO15745Profile xmlns="http://www.profibus.com/GSDML/2003/11/DeviceProfile" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.profibus.com/GSDML/2003/11/DeviceProfile ..\xsd\GSDML-DeviceProfile-V2.35.xsd">
+ <!-- ProfileHeader definition as defined in ISO 15745-1. Please do not change the content. -->
+ <ProfileHeader>
+  <ProfileIdentification>PROFINET Device Profile</ProfileIdentification>
+  <ProfileRevision>1.00</ProfileRevision>
+  <ProfileName>Device Profile for PROFINET Devices</ProfileName>
+  <ProfileSource>PROFIBUS Nutzerorganisation e. V. (PNO)</ProfileSource>
+  <ProfileClassID>Device</ProfileClassID>
+  <ISO15745Reference>
+   <ISO15745Part>4</ISO15745Part>
+   <ISO15745Edition>1</ISO15745Edition>
+   <ProfileTechnology>GSDML</ProfileTechnology>
+  </ISO15745Reference>
+ </ProfileHeader>
+ <ProfileBody>
+  <DeviceIdentity VendorID="0x01FF" DeviceID="0x0001">
+   <InfoText TextId="TOK_DevIdent_InfoText"/>
+   <VendorName Value="Rocon LLC"/>
+  </DeviceIdentity>
+  <DeviceFunction>
+   <Family MainFamily="I/O" ProductFamily="Deltapoint"/>
+  </DeviceFunction>
+  <ApplicationProcess>
+   <DeviceAccessPointList>
+    <DeviceAccessPointItem ID="2-port device" PhysicalSlots="0..2" ModuleIdentNumber="0x00000001" MinDeviceInterval="32" ImplementationType="watersaver_pnio" DNS_CompatibleName="rocon" FixedInSlots="0" ObjectUUID_LocalIndex="1" RequiredSchemaVersion="V2.2" MaxSupportedRecordSize="4068" ParameterizationSpeedupSupported="false" PowerOnToCommReady="0" DeviceAccessSupported="true" NumberOfDeviceAccessAR="1" PNIO_Version="V2.35" ResetToFactoryModes="1 2 4" CheckDeviceID_Allowed="true" MultipleWriteSupported="true" LLDP_NoD_Supported="true" NameOfStationNotTransferable="true" AddressAssignment="DCP">
+     <ModuleInfo CategoryRef="ID_PORT_IO">
+      <Name TextId="TOK_Standard_2p"/>
+      <InfoText TextId="TOK_ModInfo_InfoTextId_DAP2"/>
+      <VendorName Value="Rocon LLC"/>
+      <OrderNumber Value="00100"/>
+      <HardwareRelease Value="DPN 5.1"/>
+      <SoftwareRelease Value="FP"/>
+     </ModuleInfo>
+     <CertificationInfo ConformanceClass="B" ApplicationClass="" NetloadClass="I"/>
+     <SubslotList>
+      <SubslotItem SubslotNumber="32768" TextId="TOK_Subslot_8000"/>
+      <SubslotItem SubslotNumber="32769" TextId="TOK_Subslot_8001"/>
+      <SubslotItem SubslotNumber="32770" TextId="TOK_Subslot_8002"/>
+     </SubslotList>
+     <IOConfigData MaxInputLength="1440" MaxOutputLength="1440"/>
+     <UseableModules>
+      <ModuleItemRef ModuleItemTarget="ID_Mod_11" FixedInSlots="1"/>
+      <ModuleItemRef ModuleItemTarget="ID_Mod_12" FixedInSlots="2"/>
+     </UseableModules>
+     <VirtualSubmoduleList>
+      <VirtualSubmoduleItem ID="DAP2" SubmoduleIdentNumber="0x0001" Writeable_IM_Records="1 2 3 4" MayIssueProcessAlarm="false">
+       <IOData/>
+       <ModuleInfo>
+        <Name TextId="TOK_Standard"/>
+        <InfoText TextId="TOK_ModInfo_InfoTextId_DAP2"/>
+       </ModuleInfo>
+      </VirtualSubmoduleItem>
+     </VirtualSubmoduleList>
+     <SystemDefinedSubmoduleList>
+      <InterfaceSubmoduleItem ID="DAP2_IDS_2I" SubslotNumber="32768" SubmoduleIdentNumber="0x8000" SupportedRT_Classes="RT_CLASS_1" TextId="TOK_DAP_InterfaceModule" IsochroneModeSupported="false" SupportedProtocols="LLDP;SNMP" NetworkComponentDiagnosisSupported="false" PTP_BoundarySupported="true" DCP_BoundarySupported="true">
+       <ApplicationRelations NumberOfAdditionalInputCR="0" NumberOfAdditionalMulticastProviderCR="0" NumberOfAdditionalOutputCR="0" NumberOfMulticastConsumerCR="0" PullModuleAlarmSupported="true" StartupMode="Advanced;Legacy">
+        <TimingProperties SendClock="32" ReductionRatio="1 2 4 8 16 32 64 128 256 512"/>
+       </ApplicationRelations>
+      </InterfaceSubmoduleItem>
+      <PortSubmoduleItem ID="DAP2_IDS_2P1" SubslotNumber="32769" SubmoduleIdentNumber="0x8001" MAUTypes="16" CheckMAUTypeSupported="true" CheckMAUTypeDifferenceSupported="true" TextId="TOK_Port1" MaxPortRxDelay="378" MaxPortTxDelay="1212" PortDeactivationSupported="true" LinkStateDiagnosisCapability="Up+Down">
+       <MAUTypeList>
+        <MAUTypeItem AdjustSupported="true" Value="16"/>
+       </MAUTypeList>
+      </PortSubmoduleItem>
+      <PortSubmoduleItem ID="DAP2_IDS_2P2" SubslotNumber="32770" SubmoduleIdentNumber="0x8002" MAUTypes="16" CheckMAUTypeSupported="true" CheckMAUTypeDifferenceSupported="true" TextId="TOK_Port2" MaxPortRxDelay="378" MaxPortTxDelay="1212" PortDeactivationSupported="true" LinkStateDiagnosisCapability="Up+Down">
+       <MAUTypeList>
+        <MAUTypeItem AdjustSupported="true" Value="16"/>
+       </MAUTypeList>
+      </PortSubmoduleItem>
+     </SystemDefinedSubmoduleList>
+     <Graphics>
+      <GraphicItemRef Type="DeviceSymbol" GraphicItemTarget="ID_Graph_1"/>
+     </Graphics>
+    </DeviceAccessPointItem>
+   </DeviceAccessPointList>
+   <ModuleList>
+    <ModuleItem ID="ID_Mod_11" ModuleIdentNumber="0x00000030">
+     <ModuleInfo>
+      <Name TextId="DP_Pnet_Inputs"/>
+      <InfoText TextId="DP_Pnet_Inputs1"/>
+      <HardwareRelease Value="1.0"/>
+      <SoftwareRelease Value="1.0"/>
+     </ModuleInfo>
+     <VirtualSubmoduleList>
+      <VirtualSubmoduleItem ID="11" SubmoduleIdentNumber="0x0001" MayIssueProcessAlarm="false">
+       <IOData>
+        <Input Consistency="All items consistency">
+         <DataItem DataType="OctetString" TextId="TOK_Input_DataItem_128" Length="128" UseAsBits="true"/>
+        </Input>
+       </IOData>
+       <ModuleInfo>
+        <Name TextId="DP_Pnet_Inputs"/>
+        <InfoText TextId="DP_Pnet_Inputs1"/>
+       </ModuleInfo>
+      </VirtualSubmoduleItem>
+     </VirtualSubmoduleList>
+    </ModuleItem>
+    <ModuleItem ID="ID_Mod_12" ModuleIdentNumber="0x00000031">
+     <ModuleInfo>
+      <Name TextId="DP_Pnet_Outputs"/>
+      <InfoText TextId="DP_Pnet_Outputs1"/>
+      <HardwareRelease Value="1.0"/>
+      <SoftwareRelease Value="1.0"/>
+     </ModuleInfo>
+     <VirtualSubmoduleList>
+      <VirtualSubmoduleItem ID="12" SubmoduleIdentNumber="0x0001" MayIssueProcessAlarm="false">
+       <IOData>
+        <Output Consistency="All items consistency">
+         <DataItem DataType="OctetString" TextId="TOK_Output_DataItem_128" Length="128" UseAsBits="true"/>
+        </Output>
+       </IOData>
+       <ModuleInfo>
+        <Name TextId="DP_Pnet_Outputs"/>
+        <InfoText TextId="DP_Pnet_Outputs1"/>
+       </ModuleInfo>
+      </VirtualSubmoduleItem>
+     </VirtualSubmoduleList>
+    </ModuleItem>
+   </ModuleList>
+   <ChannelDiagList>
+    <ChannelDiagItem ErrorType="15">
+     <Name TextId="TOK_DIAG5_EXT"/>
+     <ExtChannelDiagList>
+      <ExtChannelDiagItem ErrorType="1">
+       <Name TextId="TOK_DIAG5_EXT_ET"/>
+       <ExtChannelAddValue>
+        <DataItem Id="1" DataType="Unsigned16"/>
+        <DataItem Id="2" DataType="Unsigned8"/>
+        <DataItem Id="3" DataType="Unsigned8"/>
+       </ExtChannelAddValue>
+      </ExtChannelDiagItem>
+     </ExtChannelDiagList>
+    </ChannelDiagItem>
+    <ChannelDiagItem ErrorType="16">
+     <Name TextId="TOK_Name_ErrorType16"/>
+     <Help TextId="TOK_HelpName_ErrorType16"/>
+    </ChannelDiagItem>
+   </ChannelDiagList>
+   <GraphicsList>
+    <GraphicItem ID="ID_Graph_1" GraphicFile="GSDML-01FF-0001-UFM"/>
+   </GraphicsList>
+   <CategoryList>
+    <CategoryItem ID="ID_PORT_IO" TextId="TOK_Category_Desc"/>
+   </CategoryList>
+   <ExternalTextList>
+    <PrimaryLanguage>
+     <!--english-->
+     <Text TextId="TOK_DevIdent_InfoText" Value="Rocon LLC"/>
+     <!--DAP - port IO device example-->
+     <Text TextId="TOK_Category_Desc" Value="Deltapoint_PNET"/>
+     <Text TextId="TOK_Standard" Value="Standard"/>
+     <Text TextId="TOK_Standard_2p" Value="2-port Device"/>
+     <Text TextId="TOK_ModInfo_InfoTextId_DAP2" Value="2-port Device"/>
+     <!--port name-->
+     <Text TextId="TOK_Subslot_8000" Value="X1"/>
+     <Text TextId="TOK_Subslot_8001" Value="P1"/>
+     <Text TextId="TOK_Subslot_8002" Value="P2"/>
+     <Text TextId="TOK_Subslot_8003" Value="P3"/>
+     <Text TextId="TOK_Subslot_8004" Value="P4"/>
+     <Text TextId="TOK_DAP_InterfaceModule" Value="Interface"/>
+     <Text TextId="TOK_Port1" Value="RJ45 10/100 MBit/s"/>
+     <Text TextId="TOK_Port2" Value="RJ45 10/100 MBit/s"/>
+     <!--module name-->
+     <Text TextId="DP_Pnet_Inputs" Value="128 bytes Input"/>
+     <Text TextId="DP_Pnet_Outputs" Value="128 bytes Output"/>
+     <!--module info name-->
+     <Text TextId="DP_Pnet_Inputs1" Value="128 bytes Input"/>
+     <Text TextId="DP_Pnet_Outputs1" Value="128 bytes Output"/>
+     <!--dataitem name-->
+     <Text TextId="TOK_Input_DataItem_128" Value="Input 128 bytes"/>
+     <Text TextId="TOK_Output_DataItem_128" Value="Output 128 bytes"/>
+     <!--errortype name-->
+     <Text TextId="TOK_Name_ErrorType16" Value="Parameter Assignment Error"/>
+     <Text TextId="TOK_HelpName_ErrorType16" Value="Assigning parameter failed."/>
+     <!-- record data item name  -->
+     <Text TextId="IDT_RECORD_NAME_rec1" Value="Record Data Item1"/>
+     <Text TextId="IDT_RECORD_NAME_rec2" Value="Record Data Item2"/>
+     <!-- diagnosis  -->
+     <Text TextId="TOK_DIAG5_EXT" Value="Over Temperature"/>
+     <Text TextId="TOK_DIAG5_EXT_ET" Value="Values={1:d}, {2:d}, {3:d}"/>
+    </PrimaryLanguage>
+   </ExternalTextList>
+  </ApplicationProcess>
+ </ProfileBody>
+</ISO15745Profile>

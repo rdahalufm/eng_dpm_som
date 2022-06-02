@@ -23,19 +23,19 @@
 #endif
 
 #ifndef APPL_DD_MODULE
-# define APPL_DD_MODULE ccm_demo                /**< module name */
+# define APPL_DD_MODULE roconpnet                /**< module name */
 #endif
 
 #ifndef APPL_PNIO_VENDOR_ID
-# define APPL_PNIO_VENDOR_ID 0x02c7             /**< vendor id */
+# define APPL_PNIO_VENDOR_ID 0x01FF             /**< vendor id */
 #endif
 
 #ifndef APPL_PNIO_DEVICE_ID
-# define APPL_PNIO_DEVICE_ID 0x0300            /**< device id */
+# define APPL_PNIO_DEVICE_ID 0x0001            /**< device id */
 #endif
 
 #ifndef APPL_PNIO_VENDOR
-# define APPL_PNIO_VENDOR Renesas Electronics          /**< vendor name */
+# define APPL_PNIO_VENDOR Rocon LLC          /**< vendor name */
 #endif
 
 #define QUOTE(name) #name
@@ -45,5 +45,12 @@
 #define APPL_DD_MODULE_NAME STRING(APPL_DD_MODULE)
 
 #define APPL_DD_FEATURES    GOAL_DD_FEAT_ALL    /**< enabled features of dd */
+
+
+extern volatile unsigned char IPAddressLocal[4],SMaskLocal[4],MACAddress[6];
+
+void goal_app_reset_ip(void);
+void goal_app_set_inputs(unsigned char *data, unsigned char len);
+void goal_app_get_outputs(unsigned char *data, unsigned char len);
 
 #endif /* GOAL_APPL_CONFIG_H */

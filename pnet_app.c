@@ -8,6 +8,10 @@
 #include "ad_obj.h"
 #include "dpm_datalogger.h"
 
+#ifdef SOM_UGOAL
+#include "goal_appl.h"
+#endif
+
 #define  VENTURI_TIMER_MAX          999
 #define  VENTURI_TIMER_MIN          0
 #define  BYPASS_TIMING_MAX          40
@@ -68,9 +72,32 @@ static DPMSoftTimer disp_timer;
 extern UINT32 SerialNumber;
 /**************************   CALLBACK FUNCTIONS DEMANDED BY THE FRAMEWORK   ************************/
 
+
+void pnet_app_conn() {
+ #ifdef SOM_UGOAL
+    uint8_t ip_data[4];
+    uint8_t cmd;
+    
+    ip_data[0] = pnetParams.statusByte;
+    
+    ip_data[1] = dpm_get_flow(DPM_FLOW_IN)/10;
+    ip_data[2] = dpm_get_flow(DPM_FLOW_OUT)/10;
+    ip_data[3] = dpm_adc_get_temp(TEMP_SENSOR1);
+    goal_app_set_inputs(ip_data, 4);
+    goal_app_get_outputs(&cmd, 1);
+    
+    pnetParams.remoteReset = cmd & 0x01 ? 1 : 0;
+    pnetParams.remoteShutoff = cmd & 0x02 ? 1 : 0;
+    pnetParams.remoteBypass = cmd & 0x04 ? 1 : 0;   
+    pnetParams.menuUnlock = cmd & 0x80 ? 1 : 0;
+    dpm_flags_t.remoteReset = pnetParams.remoteReset;
+    
+#endif   
+}
+
 void dpm_abcc_protocol_callback(void) {
     uint8_t cmd;
-
+    
     // Send the EIP inputs
 //    EIP_SetRobotInputs( pnetParams.statusByte, 
 //                        dpm_get_flow(DPM_FLOW_IN)/10, 
@@ -79,6 +106,7 @@ void dpm_abcc_protocol_callback(void) {
 //    
 //    // Respond to EIP outputs
 //    cmd = EIP_GetCommand();
+    
     pnetParams.remoteReset = cmd & 0x01 ? 1 : 0;
     pnetParams.remoteShutoff = cmd & 0x02 ? 1 : 0;
     pnetParams.remoteBypass = cmd & 0x04 ? 1 : 0;   
@@ -1037,6 +1065,8 @@ void pnet_app_run() {
     if (pnetParams.venturiTimeout > 0 && pnetParams.venturiEn > TIMER_OFF) {
         pnet_venturi_monitor();
     }
+    
+    pnet_app_conn();
 }
 
 unsigned char dpm_app_get_status(void) {

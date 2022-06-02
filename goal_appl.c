@@ -67,12 +67,19 @@ static GOAL_STATUS_T appl_dmCbCyclicRx(
 /****************************************************************************/
 static GOAL_BOOL_T flgAppReady = GOAL_FALSE;    /**< app ready flag */
 static GOAL_PNIO_AR_ID_T idAr = 0;              /**< AR ID */
-static char dataRpc[APPL_MOD_SIZE];             /**< buffer for module data */
+static char dataRpcIn[APPL_MOD_SIZE];             /**< buffer for module data */
+static char dataRpcOut[APPL_MOD_SIZE];
 static GOAL_TIMESTAMP_T tsTout;                 /**< timeout timestamp */
 static GOAL_PNIO_T *pPnio;                      /**< PROFINET instance */
 GOAL_BOOL_T connected = GOAL_FALSE;             /* state of PNIO connection */
 static GOAL_MA_LED_T *pMaLed;                   /**< led MA handle */
 static GOAL_MI_MCTC_DP_T genericDp;             /**< generic data provider */
+
+
+GOAL_MA_NET_T *pMaNet;
+uint32_t ip = 0;                                /* IP address */
+uint32_t nm = 0;                                /* netmask */
+uint32_t gw = 0;     
 
 /****************************************************************************/
 /** Application Init
@@ -224,10 +231,7 @@ GOAL_STATUS_T appl_setup(
 )
 {
     GOAL_STATUS_T res;                          /* result */
-    GOAL_MA_NET_T *pMaNet;
-    uint32_t ip;                                /* IP address */
-    uint32_t nm;                                /* netmask */
-    uint32_t gw;     
+    
     int i = 0;
 
     /* initialize timeout timestamp */
@@ -243,11 +247,12 @@ GOAL_STATUS_T appl_setup(
     if (GOAL_RES_ERR(res)) {
         goal_logErr("error opening network MA");
     }
-    
+
     /* set IP address */
-    ip = MAIN_APPL_IP;
-    nm = MAIN_APPL_NM;
-    gw = MAIN_APPL_GW;
+    ip = GOAL_NET_IPV4(IPAddressLocal[0], IPAddressLocal[1], IPAddressLocal[2], IPAddressLocal[3]);
+    nm = GOAL_NET_IPV4(SMaskLocal[0], SMaskLocal[1], SMaskLocal[2], SMaskLocal[3]);
+//    gw = GOAL_NET_IPV4(IPAddressLocal[0], IPAddressLocal[1], IPAddressLocal[2], 1);
+    
     res = goal_maNetIpSet(pMaNet, ip, nm, gw, GOAL_FALSE);
     if (GOAL_RES_ERR(res)) {
         goal_logErr("Set IP failed");
@@ -389,18 +394,44 @@ void appl_loop(
     if ((GOAL_TRUE == flgAppReady) && (tsTout <= tsCur)) {
 
         /* read data from output module */
-        res = goal_pnioDataOutputGet(pPnio, APPL_API, APPL_SLOT_2, APPL_SLOT_2_SUB_1, dataRpc, APPL_MOD_SIZE, &iops);
+        res = goal_pnioDataOutputGet(pPnio, APPL_API, APPL_SLOT_2, APPL_SLOT_2_SUB_1, dataRpcOut, APPL_MOD_SIZE, &iops);
         if (GOAL_RES_ERR(res)) {
             return;
         }
 
         /* copy data to input module */
-        res = goal_pnioDataInputSet(pPnio, APPL_API, APPL_SLOT_1, APPL_SLOT_1_SUB_1, dataRpc, APPL_MOD_SIZE, GOAL_PNIO_IOXS_GOOD);
+        res = goal_pnioDataInputSet(pPnio, APPL_API, APPL_SLOT_1, APPL_SLOT_1_SUB_1, dataRpcIn, APPL_MOD_SIZE, GOAL_PNIO_IOXS_GOOD);
         if (GOAL_RES_ERR(res)) {
             return;
         }
 
         /* update timeout value */
         tsTout = tsCur + APPL_TIMEOUT_TRIGGER_VAL;
+    }
+}
+
+
+void goal_app_reset_ip() {
+        /* set IP address */
+    ip = GOAL_NET_IPV4(IPAddressLocal[0], IPAddressLocal[1], IPAddressLocal[2], IPAddressLocal[3]);
+    nm = GOAL_NET_IPV4(SMaskLocal[0], SMaskLocal[1], SMaskLocal[2], SMaskLocal[3]);
+    goal_maNetIpSet(pMaNet, ip, nm, gw, GOAL_FALSE);
+}
+
+void goal_app_set_inputs(unsigned char *data, unsigned char len) {
+    uint8_t i = 0; 
+    uint8_t write_len = len > APPL_MOD_SIZE ? APPL_MOD_SIZE : len;
+    
+    for (i = 0; i < write_len; i++) {
+        dataRpcIn[i] = data[i];
+    }
+}
+
+void goal_app_get_outputs(unsigned char *data, unsigned char len) {
+    uint8_t i = 0; 
+    uint8_t write_len = len > APPL_MOD_SIZE ? APPL_MOD_SIZE : len;
+    
+    for (i = 0; i < write_len; i++) {
+        data[i] = dataRpcOut[i];
     }
 }
