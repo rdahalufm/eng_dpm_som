@@ -310,7 +310,7 @@
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="false"/>
         <property key="make-warnings-into-errors" value="false"/>
-        <property key="optimization-level" value=""/>
+        <property key="optimization-level" value="-O1"/>
         <property key="place-data-into-section" value="false"/>
         <property key="post-instruction-scheduling" value="default"/>
         <property key="pre-instruction-scheduling" value="default"/>
@@ -687,7 +687,7 @@
         <targetDevice>PIC32MX440F512H</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>noID</platformTool>
+        <platformTool>ICD3PlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
         <languageToolchainVersion>1.33</languageToolchainVersion>
         <platform>3</platform>
@@ -839,17 +839,17 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value=".;C:\Program Files (x86)\Microchip\xc32\v1.33\pic32mx\include;..\UFM Library\DPM\includes;sldrv2;..\UFM Library\DPM\usb lib\Include;..\UFM Library\DPM\usb lib\Include\HardwareProfile;..\UFM Library\DPM\usb lib\Include\USB;..\UFM Library\DPM\usb lib\Include\MDD File System"/>
+                  value=".;C:\Program Files (x86)\Microchip\xc32\v1.33\pic32mx\include;..\UFM Library\DPM\includes;sldrv2;..\UFM Library\DPM\usb lib\Include;..\UFM Library\DPM\usb lib\Include\HardwareProfile;..\UFM Library\DPM\usb lib\Include\USB;..\UFM Library\DPM\usb lib\Include\MDD File System;ugoal;sapi;rpc\goal_mctc;rpc\goal_media;rpc\wrapper\pnio;rpc\wrapper\http;rpc\wrapper\ccm;pic32;rpc;rpc\wrapper\net;rpc\wrapper\dd\protos\dd\rpc;rpc\wrapper\dd"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="false"/>
         <property key="make-warnings-into-errors" value="false"/>
-        <property key="optimization-level" value=""/>
+        <property key="optimization-level" value="-O1"/>
         <property key="place-data-into-section" value="false"/>
         <property key="post-instruction-scheduling" value="default"/>
         <property key="pre-instruction-scheduling" value="default"/>
         <property key="preprocessor-macros"
-                  value="_SUPPRESS_PLIB_WARNING;CPM3F4T1_0;TRANSPORT_LAYER_USB_HOST;BOOTLOADER_MODE"/>
+                  value="_SUPPRESS_PLIB_WARNING;CPM3F4T1_0;TRANSPORT_LAYER_USB_HOST"/>
         <property key="strict-ansi" value="false"/>
         <property key="support-ansi" value="false"/>
         <property key="tentative-definitions" value=""/>
@@ -918,7 +918,7 @@
         <property key="optimization-level" value=""/>
         <property key="preprocessor-macros" value=""/>
         <property key="remove-unused-sections" value="false"/>
-        <property key="report-memory-usage" value="false"/>
+        <property key="report-memory-usage" value="true"/>
         <property key="serial-length" value=""/>
         <property key="serial-origin" value=""/>
         <property key="stack-size" value=""/>
@@ -1069,6 +1069,8 @@
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
         <property key="UART1" value="false"/>
         <property key="UART2" value="false"/>
+        <property key="debugoptions.debug-startup" value="Use system settings"/>
+        <property key="debugoptions.reset-behaviour" value="Use system settings"/>
         <property key="debugoptions.useswbreakpoints" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>

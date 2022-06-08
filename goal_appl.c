@@ -19,14 +19,16 @@
 #include "goal_appl.h"
 #include "ctc_net_ac.h"
 #include "ctc_net_rpc.h"
+#include "goal_http.h"
+#include <goal_dd.h>
 
 /****************************************************************************/
 /* Local Defines */
 /****************************************************************************/
 #define APPL_PNIO_ID        0                   /**< PROFINET instance id */
-
-#define APPL_TIMEOUT_TRIGGER_VAL 100 * GOAL_TIMER_MSEC /**< timeout trigger in ms */
-#define APPL_MOD_SIZE       128                 /**< module sizes */
+#define APPL_SNMP_ID        0 
+#define APPL_TIMEOUT_TRIGGER_VAL 10 * GOAL_TIMER_MSEC /**< timeout trigger in ms */
+#define APPL_MOD_SIZE       1                 /**< module sizes */
 
 #define APPL_API            0                   /**< API 0 */
 
@@ -34,16 +36,28 @@
 #define APPL_SLOT_1_SUB_1   1                   /**< submodule for slot 1 */
 #define APPL_SLOT_2         2                   /**< slot 2 */
 #define APPL_SLOT_2_SUB_1   1                   /**< submodule for slot 2 */
+#define APPL_SLOT_3         3                   /**< slot 1 */
+#define APPL_SLOT_3_SUB_1   1                   /**< submodule for slot 3 */
+#define APPL_SLOT_4         4                   /**< slot 2 */
+#define APPL_SLOT_4_SUB_1   1                   /**< submodule for slot 4 */
+#define APPL_SLOT_5         5                   /**< slot 1 */
+#define APPL_SLOT_5_SUB_1   1                   /**< submodule for slot 5 */
 
-#define APPL_MOD_1          0x30                /**< module 1 */
+
+
+
+#define APPL_MOD_1          0x02                /**< module 1 */
 #define APPL_MOD_1_SUB_1    0x01                /**< submodule for module 1 */
-#define APPL_MOD_2          0x31                /**< module 2 */
+#define APPL_MOD_2          0x20                /**< module 2 */
 #define APPL_MOD_2_SUB_1    0x01                /**< submodule for module 2 */
 
 
 #define MAIN_APPL_IP            GOAL_NET_IPV4(192, 168, 1, 45)
 #define MAIN_APPL_NM            GOAL_NET_IPV4(255, 255, 255, 0)
 #define MAIN_APPL_GW            GOAL_NET_IPV4(192, 168, 1, 1)
+
+#define APPL_SLOT_COUNT     6                  /**< maximum number of slots */
+#define APPL_SUBSLOT_COUNT  6                  /**< maximum number of subslots */
 
 /****************************************************************************/
 /* Local Prototypes */
@@ -92,6 +106,17 @@ GOAL_STATUS_T appl_init(
 {
     GOAL_STATUS_T res;                          /* result */
 
+    /* initialize DD */
+    res = goal_ddInit();
+    if (GOAL_RES_ERR(res)) {
+        goal_logErr("Initialization of DD failed");
+    }
+    
+    res = goal_snmpInit();
+    if (GOAL_RES_ERR(res)) {
+        goal_logErr("Initialization of SNMP failed");
+    }
+    
     /* initialize PROFINET */
     res = goal_pnioInit();
     if (GOAL_RES_ERR(res)) {
@@ -99,7 +124,12 @@ GOAL_STATUS_T appl_init(
     } else {
         goal_logInfo("PNET Initialized");
     }
-
+    
+    /* initialize ccm RPC interface */
+    res = appl_ccmRpcInit();
+    if (GOAL_RES_ERR(res)) {
+        goal_logErr("Initialization of ccm RPC failed");
+    }
     return res;
 }
 
@@ -167,6 +197,47 @@ void som_dataCb(
 }
 #endif
 
+/****************************************************************************/
+/** Plug module from ExpectedSubmoduleEntry
+ */
+static void main_modulePlug(
+    GOAL_PNIO_CB_DATA_T *pCb                    /**< callback parameters */
+)
+{
+    GOAL_STATUS_T res;
+    /* plug module & submodule (RPC) */
+    res = goal_pnioRpcSubmodPlug(pPnio, pCb->data[1].u32, pCb->data[2].u16, pCb->data[3].u16, pCb->data[4].u32, pCb->data[5].u32);
+
+    if (GOAL_RES_ERR(res)) {
+        goal_logErr("error while plugging module (0x%08" FMT_x32 ", 0x%08" FMT_x32 ") into slot (%" FMT_u32 ", %u, %u)",
+                    pCb->data[4].u32, pCb->data[5].u32, pCb->data[1].u32, pCb->data[2].u16, pCb->data[3].u16);
+        return;
+    }
+
+    goal_logInfo("plugged module (0x%08" FMT_x32 ", 0x%08" FMT_x32 ") into slot (%" FMT_u32 ", %u, %u)",
+                 pCb->data[4].u32, pCb->data[5].u32, pCb->data[1].u32, pCb->data[2].u16, pCb->data[3].u16);
+}
+
+/****************************************************************************/
+/** Pull all modules
+ *
+ * Remove all modules from their slots.
+ */
+static void main_modulePull(
+    void
+)
+{
+    GOAL_STATUS_T res;                          /* result */
+    uint16_t cnt;                               /* counter */
+
+    /* slot 0 contains DAP and interfaces, don't pull these */
+    for (cnt = APPL_SLOT_1; cnt <= APPL_SLOT_5; cnt++) {
+        res = goal_pnioModPull(pPnio, APPL_API, cnt);
+        if (GOAL_RES_ERR(res)) {
+            goal_logErr("error while pulling module: %u", cnt);
+        }
+    }
+}
 
 /****************************************************************************/
 /** Profinet Callback Handler
@@ -212,7 +283,15 @@ static GOAL_STATUS_T appl_pnioCb(
              *  LEDs should be evaluated from the generic data provider states.
              */
             break;
-
+            /* Putting this causes issues with the input bytes in profinet cyclic */
+//        case GOAL_PNIO_CB_ID_CONNECT_REQUEST_EXP_START:
+//            /* start of ExpectedSubmoduleBlock received, remove all modules */
+//            main_modulePull();
+//            break;    
+        case GOAL_PNIO_CB_ID_EXP_SUBMOD:
+            /* module config request received */
+            main_modulePlug(pCb);
+            break;
         default:
             break;
     }
@@ -231,7 +310,7 @@ GOAL_STATUS_T appl_setup(
 )
 {
     GOAL_STATUS_T res;                          /* result */
-    
+    GOAL_INSTANCE_SNMP_T *pInstanceSnmp = NULL; /* GOAL_SNMP handle */
     int i = 0;
 
     /* initialize timeout timestamp */
@@ -259,6 +338,35 @@ GOAL_STATUS_T appl_setup(
         return res;
     }
 
+    /* configure stack to feature the GOAL_PNIO_CB_ID_NEW_IO_DATA callback */
+    goal_pnioCfgNewIoDataCbSet(GOAL_TRUE);
+
+    res = goal_snmpNew(&pInstanceSnmp, APPL_SNMP_ID);
+    if (GOAL_RES_ERR(res)) {
+        goal_logErr("failed to create SNMP instance");
+        return res;
+    }
+
+    /* set SNMP instance id for new PNIO instance */
+    res = goal_pnioCfgSnmpIdSet(APPL_SNMP_ID);
+    if (GOAL_RES_ERR(res)) {
+        goal_logErr("failed to set SNMP instance id");
+        return res;
+    }
+
+    /* Slot Maximum Count */
+    res = goal_pnioCfgSlotMaxCntSet(APPL_SLOT_COUNT);
+    if (GOAL_RES_ERR(res)) {
+        return res;
+    }
+
+    /* Subslot Maximum Count */
+    res = goal_pnioCfgSubslotMaxCntSet(APPL_SUBSLOT_COUNT);
+    if (GOAL_RES_ERR(res)) {
+        return res;
+    }
+    
+    
     /* set identification of the slave (vendor id) */
     res = goal_pnioCfgVendorIdSet(APPL_PNIO_VENDOR_ID);
     if (GOAL_RES_ERR(res)) {
@@ -280,6 +388,12 @@ GOAL_STATUS_T appl_setup(
         return res;
     }
 
+    res = goal_pnioCfgNumProcAlBufSetAc(10);
+    if (GOAL_RES_ERR(res)) {
+        goal_logErr("failed to configure AlBuf");
+        return res;
+    }
+    
     /* create new PROFINET instance */
     res = goal_pnioNew(&pPnio, APPL_PNIO_ID, appl_pnioCb);
     if (GOAL_RES_ERR(res)) {
@@ -301,7 +415,28 @@ GOAL_STATUS_T appl_setup(
         goal_logErr("failed to add subslot");
         return res;
     }
+    
+    res = goal_pnioSubslotNew(pPnio, APPL_API, APPL_SLOT_3, APPL_SLOT_3_SUB_1, GOAL_PNIO_FLG_AUTO_GEN);
+    if (GOAL_RES_ERR(res)) {
+        goal_logErr("failed to add subslot");
+        return res;
+    }
 
+    res = goal_pnioSubslotNew(pPnio, APPL_API, APPL_SLOT_4, APPL_SLOT_4_SUB_1, GOAL_PNIO_FLG_AUTO_GEN);
+    if (GOAL_RES_ERR(res)) {
+        goal_logErr("failed to add subslot");
+        return res;
+    }
+    
+    
+    res = goal_pnioSubslotNew(pPnio, APPL_API, APPL_SLOT_5, APPL_SLOT_5_SUB_1, GOAL_PNIO_FLG_AUTO_GEN);
+    if (GOAL_RES_ERR(res)) {
+        goal_logErr("failed to add subslot");
+        return res;
+    }
+    
+    
+    
     /* create submodules */
     res = goal_pnioSubmodNew(pPnio, APPL_MOD_1, APPL_MOD_1_SUB_1, GOAL_PNIO_MOD_TYPE_INPUT, APPL_MOD_SIZE, 0, GOAL_PNIO_FLG_AUTO_GEN);
     if (GOAL_RES_ERR(res)) {
@@ -314,10 +449,7 @@ GOAL_STATUS_T appl_setup(
         goal_logErr("failed to add submodule");
         return res;
     }
-
-
-    //-------------------- Making the slots complaint with what we had with HMS, which is 64 slots
-
+    
     
 
     //--------------------------------------------------------------------------------------------
@@ -344,14 +476,29 @@ GOAL_STATUS_T appl_setup(
         return res;
     }
 
-    res = goal_pnioRpcSubmodPlug(pPnio, APPL_API, APPL_SLOT_2, APPL_SLOT_2_SUB_1, APPL_MOD_2, APPL_MOD_2_SUB_1);
+    res = goal_pnioRpcSubmodPlug(pPnio, APPL_API, APPL_SLOT_2, APPL_SLOT_2_SUB_1, APPL_MOD_1, APPL_MOD_1_SUB_1);
     if (GOAL_RES_ERR(res)) {
         goal_logErr("failed to plug submodule");
         return res;
     }
 
-
+    res = goal_pnioRpcSubmodPlug(pPnio, APPL_API, APPL_SLOT_3, APPL_SLOT_3_SUB_1, APPL_MOD_1, APPL_MOD_1_SUB_1);
+    if (GOAL_RES_ERR(res)) {
+        goal_logErr("failed to plug submodule");
+        return res;
+    }
     
+    res = goal_pnioRpcSubmodPlug(pPnio, APPL_API, APPL_SLOT_4, APPL_SLOT_4_SUB_1, APPL_MOD_1, APPL_MOD_1_SUB_1);
+    if (GOAL_RES_ERR(res)) {
+        goal_logErr("failed to plug submodule");
+        return res;
+    }
+    
+    res = goal_pnioRpcSubmodPlug(pPnio, APPL_API, APPL_SLOT_5, APPL_SLOT_5_SUB_1, APPL_MOD_2, APPL_MOD_2_SUB_1);
+    if (GOAL_RES_ERR(res)) {
+        goal_logErr("failed to plug submodule");
+        return res;
+    }
 
     /* PROFINET configuration succesful */
     goal_logInfo("PROFINET ready");
@@ -368,6 +515,7 @@ GOAL_STATUS_T appl_setup(
         goal_maLedSet(pMaLed, GOAL_MA_LED_MODBUS, GOAL_MA_LED_STATE_OFF);
     }
 
+    
     return GOAL_OK;
 }
 
@@ -393,17 +541,17 @@ void appl_loop(
     /* Write the value in the module */
     if ((GOAL_TRUE == flgAppReady) && (tsTout <= tsCur)) {
 
-        /* read data from output module */
-        res = goal_pnioDataOutputGet(pPnio, APPL_API, APPL_SLOT_2, APPL_SLOT_2_SUB_1, dataRpcOut, APPL_MOD_SIZE, &iops);
-        if (GOAL_RES_ERR(res)) {
-            return;
-        }
-
-        /* copy data to input module */
-        res = goal_pnioDataInputSet(pPnio, APPL_API, APPL_SLOT_1, APPL_SLOT_1_SUB_1, dataRpcIn, APPL_MOD_SIZE, GOAL_PNIO_IOXS_GOOD);
-        if (GOAL_RES_ERR(res)) {
-            return;
-        }
+//        /* read data from output module */
+//        res = goal_pnioDataOutputGet(pPnio, APPL_API, APPL_SLOT_5, APPL_SLOT_5_SUB_1, dataRpcOut, APPL_MOD_SIZE, &iops);
+//        if (GOAL_RES_ERR(res)) {
+//            return;
+//        }
+//
+//        /* copy data to input module */
+//        res = goal_pnioDataInputSet(pPnio, APPL_API, APPL_SLOT_1, APPL_SLOT_1_SUB_1, dataRpcOut, APPL_MOD_SIZE, GOAL_PNIO_IOXS_GOOD);
+//        if (GOAL_RES_ERR(res)) {
+//            return;
+//        }
 
         /* update timeout value */
         tsTout = tsCur + APPL_TIMEOUT_TRIGGER_VAL;

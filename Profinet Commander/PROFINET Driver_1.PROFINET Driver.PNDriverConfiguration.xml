@@ -21,9 +21,9 @@
           <Field Key="4097" Length="12">300600080101000000000000</Field>
           <Field Key="4096" Length="20">3000001001000000C0A80196FFFFFF00C0A80196</Field>
           <Field Key="4100" Length="12">300900080101000000000000</Field>
-          <Field Key="4099" Length="36">A20100200100000000150000726F636F6E786264656C7461706F696E7461303238000000</Field>
+          <Field Key="4099" Length="28">A201001801000000000E000070726F66696E65746472697665720000</Field>
           <Field Key="65536" Length="12">F00000080100040000030000</Field>
-          <Field Key="32881" Length="12">025000080100000000000001</Field>
+          <Field Key="32881" Length="12">025000080100000000000000</Field>
           <Field Key="143616" Length="20">F001001001000000002A00080064000000000000</Field>
         </Value>
       </Variable>
@@ -58,8 +58,8 @@
         <Field Key="12352" Length="20">3040001001000000002A000800640258012C0000</Field>
       </Value>
     </Variable>
-    <Object Name="rocon">
-      <GSDMLFile>gsdml-v2.35-rocon-pnet-20220601.xml</GSDMLFile>
+    <Object Name="Rocon">
+      <GSDMLFile>gsdml-v2.25-ufm-abcc-prt2p-20111117.xml</GSDMLFile>
       <ClassRID>6</ClassRID>
       <Key AID="3">1</Key>
       <Variable Name="DeactivatedConfig">
@@ -68,15 +68,15 @@
       </Variable>
       <Variable Name="LADDR">
         <AID>10</AID>
-        <Value Datatype="Scalar" Valuetype="UINT16">263</Value>
+        <Value Datatype="Scalar" Valuetype="UINT16">262</Value>
       </Variable>
       <Variable Name="IODevParamConfig">
         <AID>13</AID>
         <Value Datatype="SparseArray" Valuetype="BLOB">
-          <Field Key="12544" Length="64">3100003C010100000100000185780AA3C743094BB06E6A6F31AB36154000001100C8000000000000000000000000000000000000000000000000000000000000</Field>
-          <Field Key="12384" Length="32">3060001C0100000001FF000100010FE400000001000010000000000000000000</Field>
-          <Field Key="12546" Length="256">310200FC01000000000200780100000100018892000000000002008680000020002000010000FFFFFFFF000300030000C000000000000000000000000000000000000000000100000000000500000001000000000000800000010000000080010002000000008002000300000001000100040000000000010002000100850000000000780100000200028892000000000002008680010020002000010000FFFFFFFF000300030000C0000000000000000000000000000000000000000001000000000001000200010005000000000005000000010000000000008000000100000000800100020000000080020003000000010001000400000000000000000000</Field>
-          <Field Key="12545" Length="224">310100DC01000000000100000000000000030074010000000000000000010000800200000004000100000000000100000000000100000001000100000000800000000000800000000000000100000001000100000000800100000000800100000000000100000001000100000000800200000000800200000000000100000001000100000000002C010000010000000000300000000100000001000100000000000100010000000100800001000100000000002C0100000200000000003100000001000000010001000000000001000200000000008000010001000000000000</Field>
+          <Field Key="12544" Length="64">3100003C0101000001000001126380FDDBD4094F9F2C5FA531E321D4000000110258000000000000000000000000000000000000000000000000000000000000</Field>
+          <Field Key="12384" Length="32">3060001C0100000001FF000100010FE400000000000001000000000000000000</Field>
+          <Field Key="12546" Length="256">310200FC01000000000200780100000100018892000000000001000AC0000020002000010000FFFFFFFF000300030000C0000000000000000000000000000000000000000001000000000005000000010000000000010001000100000002000100030000000300010005000000040001000700000000000100050001000900000000007801000002000288920000000000010007C0010020002000010000FFFFFFFF000300030000C0000000000000000000000000000000000000000001000000000001000500010005000000000005000000010000000000010001000100000002000100020000000300010003000000040001000400000000000000000000</Field>
+          <Field Key="12545" Length="288">3101011C0100000000010000000000000006002C010000000000000000110000000100000001000100000000000100000000000100000001000100000000002C010000010000000000020000000100000001000100000000000000010000000100010001000100000000002C010000020000000000020000000100000001000100000000000000010000000100010001000100000000002C010000030000000000020000000100000001000100000000000000010000000100010001000100000000002C010000040000000000020000000100000001000100000000000000010000000100010001000100000000002C010000050000000000200000000100000001000100000000000000020000000000010001000100000000000000000000</Field>
           <Field Key="12548" Length="64">3104003C010000000002001400010400000100010000FFFFFFFF00000000001400020400000100010000FFFFFFFF000000000000000000000000000000000000</Field>
           <Field Key="12551" Length="28">310700180100000001000001889200000000000000010003C000A000</Field>
         </Value>
@@ -92,78 +92,12 @@
           </Value>
         </Variable>
       </Object>
-      <Object Name="rocon">
+      <Object Name="Rocon">
         <ClassRID>7</ClassRID>
         <Key AID="1">0</Key>
-        <Object Name="rocon">
-          <ClassRID>8</ClassRID>
-          <Key AID="2">65520</Key>
-          <Variable Name="LADDR">
-            <AID>10</AID>
-            <Value Datatype="Scalar" Valuetype="UINT16">258</Value>
-          </Variable>
-          <Variable Name="DataRecordsConf">
-            <AID>11</AID>
-            <Value Datatype="SparseArray" Valuetype="BLOB" />
-          </Variable>
-          <Variable Name="DataRecordsTransferSequence">
-            <AID>14</AID>
-            <Value Datatype="Scalar" Valuetype="BLOB" Length="0" />
-          </Variable>
-        </Object>
-        <Object Name="Standard">
+        <Object Name="2-port Device">
           <ClassRID>9</ClassRID>
           <Key AID="2">1</Key>
-          <Variable Name="LADDR">
-            <AID>10</AID>
-            <Value Datatype="Scalar" Valuetype="UINT16">262</Value>
-          </Variable>
-          <Variable Name="DataRecordsConf">
-            <AID>11</AID>
-            <Value Datatype="SparseArray" Valuetype="BLOB" />
-          </Variable>
-          <Variable Name="DataRecordsTransferSequence">
-            <AID>14</AID>
-            <Value Datatype="Scalar" Valuetype="BLOB" Length="0" />
-          </Variable>
-        </Object>
-        <Object Name="Interface">
-          <ClassRID>9</ClassRID>
-          <Key AID="2">32768</Key>
-          <Variable Name="LADDR">
-            <AID>10</AID>
-            <Value Datatype="Scalar" Valuetype="UINT16">259</Value>
-          </Variable>
-          <Variable Name="DataRecordsConf">
-            <AID>11</AID>
-            <Value Datatype="SparseArray" Valuetype="BLOB">
-              <Field Key="32881" Length="12">025000080100000000000001</Field>
-            </Value>
-          </Variable>
-          <Variable Name="DataRecordsTransferSequence">
-            <AID>14</AID>
-            <Value Datatype="Scalar" Valuetype="BLOB" Length="0" />
-          </Variable>
-        </Object>
-        <Object Name="RJ45 10/100 MBit/s">
-          <ClassRID>9</ClassRID>
-          <Key AID="2">32769</Key>
-          <Variable Name="LADDR">
-            <AID>10</AID>
-            <Value Datatype="Scalar" Valuetype="UINT16">260</Value>
-          </Variable>
-          <Variable Name="DataRecordsConf">
-            <AID>11</AID>
-            <Value Datatype="SparseArray" Valuetype="BLOB" />
-          </Variable>
-          <Variable Name="DataRecordsTransferSequence">
-            <AID>14</AID>
-            <Value Datatype="Scalar" Valuetype="BLOB" Length="0" />
-          </Variable>
-        </Object>
-        <Object Name="RJ45 10/100 MBit/s_1">
-          <ClassRID>9</ClassRID>
-          <Key AID="2">32770</Key>
           <Variable Name="LADDR">
             <AID>10</AID>
             <Value Datatype="Scalar" Valuetype="UINT16">261</Value>
@@ -178,10 +112,10 @@
           </Variable>
         </Object>
       </Object>
-      <Object Name="128 bytes Input_1">
+      <Object Name="Input 1 byte_1">
         <ClassRID>7</ClassRID>
         <Key AID="1">1</Key>
-        <Object Name="128 bytes Input">
+        <Object Name="Input 1 byte_1">
           <ClassRID>10</ClassRID>
           <Key AID="2">1</Key>
           <Variable Name="LADDR">
@@ -200,17 +134,46 @@
             <AID>5</AID>
             <Value Datatype="Scalar" Valuetype="STRUCT">
               <Element AID="6" Datatype="Scalar" Valuetype="UINT32">0</Element>
-              <Element AID="7" Datatype="Scalar" Valuetype="UINT16">128</Element>
+              <Element AID="7" Datatype="Scalar" Valuetype="UINT16">1</Element>
               <Element AID="8" Datatype="Scalar" Valuetype="UINT32">0</Element>
               <Element AID="9" Datatype="Scalar" Valuetype="UINT16">0</Element>
             </Value>
           </Variable>
         </Object>
       </Object>
-      <Object Name="128 bytes Output_1">
+      <Object Name="Input 1 byte_2">
         <ClassRID>7</ClassRID>
         <Key AID="1">2</Key>
-        <Object Name="128 bytes Output">
+        <Object Name="Input 1 byte_2">
+          <ClassRID>10</ClassRID>
+          <Key AID="2">1</Key>
+          <Variable Name="LADDR">
+            <AID>10</AID>
+            <Value Datatype="Scalar" Valuetype="UINT16">265</Value>
+          </Variable>
+          <Variable Name="DataRecordsConf">
+            <AID>11</AID>
+            <Value Datatype="SparseArray" Valuetype="BLOB" />
+          </Variable>
+          <Variable Name="DataRecordsTransferSequence">
+            <AID>14</AID>
+            <Value Datatype="Scalar" Valuetype="BLOB" Length="0" />
+          </Variable>
+          <Variable Name="IOmapping">
+            <AID>5</AID>
+            <Value Datatype="Scalar" Valuetype="STRUCT">
+              <Element AID="6" Datatype="Scalar" Valuetype="UINT32">1</Element>
+              <Element AID="7" Datatype="Scalar" Valuetype="UINT16">1</Element>
+              <Element AID="8" Datatype="Scalar" Valuetype="UINT32">0</Element>
+              <Element AID="9" Datatype="Scalar" Valuetype="UINT16">0</Element>
+            </Value>
+          </Variable>
+        </Object>
+      </Object>
+      <Object Name="Input 1 byte_3">
+        <ClassRID>7</ClassRID>
+        <Key AID="1">3</Key>
+        <Object Name="Input 1 byte_3">
           <ClassRID>10</ClassRID>
           <Key AID="2">1</Key>
           <Variable Name="LADDR">
@@ -228,10 +191,68 @@
           <Variable Name="IOmapping">
             <AID>5</AID>
             <Value Datatype="Scalar" Valuetype="STRUCT">
+              <Element AID="6" Datatype="Scalar" Valuetype="UINT32">2</Element>
+              <Element AID="7" Datatype="Scalar" Valuetype="UINT16">1</Element>
+              <Element AID="8" Datatype="Scalar" Valuetype="UINT32">0</Element>
+              <Element AID="9" Datatype="Scalar" Valuetype="UINT16">0</Element>
+            </Value>
+          </Variable>
+        </Object>
+      </Object>
+      <Object Name="Input 1 byte_4">
+        <ClassRID>7</ClassRID>
+        <Key AID="1">4</Key>
+        <Object Name="Input 1 byte_4">
+          <ClassRID>10</ClassRID>
+          <Key AID="2">1</Key>
+          <Variable Name="LADDR">
+            <AID>10</AID>
+            <Value Datatype="Scalar" Valuetype="UINT16">267</Value>
+          </Variable>
+          <Variable Name="DataRecordsConf">
+            <AID>11</AID>
+            <Value Datatype="SparseArray" Valuetype="BLOB" />
+          </Variable>
+          <Variable Name="DataRecordsTransferSequence">
+            <AID>14</AID>
+            <Value Datatype="Scalar" Valuetype="BLOB" Length="0" />
+          </Variable>
+          <Variable Name="IOmapping">
+            <AID>5</AID>
+            <Value Datatype="Scalar" Valuetype="STRUCT">
+              <Element AID="6" Datatype="Scalar" Valuetype="UINT32">3</Element>
+              <Element AID="7" Datatype="Scalar" Valuetype="UINT16">1</Element>
+              <Element AID="8" Datatype="Scalar" Valuetype="UINT32">0</Element>
+              <Element AID="9" Datatype="Scalar" Valuetype="UINT16">0</Element>
+            </Value>
+          </Variable>
+        </Object>
+      </Object>
+      <Object Name="Output 1 byte_1">
+        <ClassRID>7</ClassRID>
+        <Key AID="1">5</Key>
+        <Object Name="Output 1 byte_1">
+          <ClassRID>10</ClassRID>
+          <Key AID="2">1</Key>
+          <Variable Name="LADDR">
+            <AID>10</AID>
+            <Value Datatype="Scalar" Valuetype="UINT16">268</Value>
+          </Variable>
+          <Variable Name="DataRecordsConf">
+            <AID>11</AID>
+            <Value Datatype="SparseArray" Valuetype="BLOB" />
+          </Variable>
+          <Variable Name="DataRecordsTransferSequence">
+            <AID>14</AID>
+            <Value Datatype="Scalar" Valuetype="BLOB" Length="0" />
+          </Variable>
+          <Variable Name="IOmapping">
+            <AID>5</AID>
+            <Value Datatype="Scalar" Valuetype="STRUCT">
               <Element AID="6" Datatype="Scalar" Valuetype="UINT32">0</Element>
               <Element AID="7" Datatype="Scalar" Valuetype="UINT16">0</Element>
               <Element AID="8" Datatype="Scalar" Valuetype="UINT32">0</Element>
-              <Element AID="9" Datatype="Scalar" Valuetype="UINT16">128</Element>
+              <Element AID="9" Datatype="Scalar" Valuetype="UINT16">1</Element>
             </Value>
           </Variable>
         </Object>
