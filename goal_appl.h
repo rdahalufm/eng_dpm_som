@@ -41,7 +41,7 @@
 #define QUOTE(name) #name
 #define STRING(macro) QUOTE(macro)
 
-#define APPL_PNIO_VENDOR_NAME "Deltapoint" //STRING(APPL_PNIO_VENDOR)
+#define APPL_PNIO_VENDOR_NAME "Rocon" //STRING(APPL_PNIO_VENDOR)
 #define APPL_DD_MODULE_NAME STRING(APPL_DD_MODULE)
 
 #define APPL_DD_FEATURES    GOAL_DD_FEAT_ALL    /**< enabled features of dd */

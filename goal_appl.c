@@ -44,20 +44,25 @@
 #define APPL_SLOT_5_SUB_1   1                   /**< submodule for slot 5 */
 
 
-
+#define DAP_MODULE_ID       0x11 // To match with HMS 
 
 #define APPL_MOD_1          0x02                /**< module 1 */
-#define APPL_MOD_1_SUB_1    0x01                /**< submodule for module 1 */
+#define APPL_MOD_1_SUB_1    0x00                /**< submodule for module 1 */
 #define APPL_MOD_2          0x20                /**< module 2 */
-#define APPL_MOD_2_SUB_1    0x01                /**< submodule for module 2 */
+#define APPL_MOD_2_SUB_1    0x00                /**< submodule for module 2 */
 
 
 #define MAIN_APPL_IP            GOAL_NET_IPV4(192, 168, 1, 45)
 #define MAIN_APPL_NM            GOAL_NET_IPV4(255, 255, 255, 0)
 #define MAIN_APPL_GW            GOAL_NET_IPV4(192, 168, 1, 1)
 
-#define APPL_SLOT_COUNT     6                  /**< maximum number of slots */
-#define APPL_SUBSLOT_COUNT  6                  /**< maximum number of subslots */
+#define APPL_SLOT_COUNT     16                  /**< maximum number of slots */
+#define APPL_SUBSLOT_COUNT  5                  /**< maximum number of subslots */
+
+
+
+#define INPUT_DATA_SIZE        (4)
+#define OUTPUT_DATA_SIZE       (1)
 
 /****************************************************************************/
 /* Local Prototypes */
@@ -81,8 +86,8 @@ static GOAL_STATUS_T appl_dmCbCyclicRx(
 /****************************************************************************/
 static GOAL_BOOL_T flgAppReady = GOAL_FALSE;    /**< app ready flag */
 static GOAL_PNIO_AR_ID_T idAr = 0;              /**< AR ID */
-static char dataRpcIn[APPL_MOD_SIZE];             /**< buffer for module data */
-static char dataRpcOut[APPL_MOD_SIZE];
+static char dataRpcIn[INPUT_DATA_SIZE];             /**< buffer for module data */
+static char dataRpcOut[OUTPUT_DATA_SIZE];
 static GOAL_TIMESTAMP_T tsTout;                 /**< timeout timestamp */
 static GOAL_PNIO_T *pPnio;                      /**< PROFINET instance */
 GOAL_BOOL_T connected = GOAL_FALSE;             /* state of PNIO connection */
@@ -394,6 +399,8 @@ GOAL_STATUS_T appl_setup(
         return res;
     }
     
+    goal_pnioCfgDevDapModuleSet(DAP_MODULE_ID);
+    
     /* create new PROFINET instance */
     res = goal_pnioNew(&pPnio, APPL_PNIO_ID, appl_pnioCb);
     if (GOAL_RES_ERR(res)) {
@@ -534,24 +541,30 @@ void appl_loop(
     GOAL_STATUS_T res;                          /* result */
     GOAL_TIMESTAMP_T tsCur;                     /* current timestamp */
     GOAL_PNIO_IOXS_T iops;                      /* io state */
-
+    uint8_t i = 0;
     /* get current timestamp */
     tsCur = goal_timerTsGet();
 
     /* Write the value in the module */
     if ((GOAL_TRUE == flgAppReady) && (tsTout <= tsCur)) {
 
-//        /* read data from output module */
-//        res = goal_pnioDataOutputGet(pPnio, APPL_API, APPL_SLOT_5, APPL_SLOT_5_SUB_1, dataRpcOut, APPL_MOD_SIZE, &iops);
-//        if (GOAL_RES_ERR(res)) {
-//            return;
-//        }
-//
-//        /* copy data to input module */
-//        res = goal_pnioDataInputSet(pPnio, APPL_API, APPL_SLOT_1, APPL_SLOT_1_SUB_1, dataRpcOut, APPL_MOD_SIZE, GOAL_PNIO_IOXS_GOOD);
-//        if (GOAL_RES_ERR(res)) {
-//            return;
-//        }
+        
+        /* read data from output module */
+        for (i = 0; i < OUTPUT_DATA_SIZE; i++) {
+            res = goal_pnioDataOutputGet(pPnio, APPL_API, i + APPL_SLOT_5, 1, &dataRpcOut[i], 1, &iops);
+            if (GOAL_RES_ERR(res)) {
+                return;
+            }
+        }
+        
+        /* write data to input module*/
+        for (i = 0; i < INPUT_DATA_SIZE; i++) {
+            res = goal_pnioDataInputSet(pPnio, APPL_API, i + APPL_SLOT_1, 1, &dataRpcIn[i], 1, GOAL_PNIO_IOXS_GOOD);
+            if (GOAL_RES_ERR(res)) {
+                return;
+            }
+        }
+        
 
         /* update timeout value */
         tsTout = tsCur + APPL_TIMEOUT_TRIGGER_VAL;
@@ -568,7 +581,7 @@ void goal_app_reset_ip() {
 
 void goal_app_set_inputs(unsigned char *data, unsigned char len) {
     uint8_t i = 0; 
-    uint8_t write_len = len > APPL_MOD_SIZE ? APPL_MOD_SIZE : len;
+    uint8_t write_len = len > INPUT_DATA_SIZE ? INPUT_DATA_SIZE : len;
     
     for (i = 0; i < write_len; i++) {
         dataRpcIn[i] = data[i];
@@ -577,7 +590,7 @@ void goal_app_set_inputs(unsigned char *data, unsigned char len) {
 
 void goal_app_get_outputs(unsigned char *data, unsigned char len) {
     uint8_t i = 0; 
-    uint8_t write_len = len > APPL_MOD_SIZE ? APPL_MOD_SIZE : len;
+    uint8_t write_len = len > OUTPUT_DATA_SIZE ? OUTPUT_DATA_SIZE : len;
     
     for (i = 0; i < write_len; i++) {
         data[i] = dataRpcOut[i];
