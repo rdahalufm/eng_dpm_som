@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<ISO15745Profile xmlns="http://www.profibus.com/GSDML/2003/11/DeviceProfile" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.profibus.com/GSDML/2003/11/DeviceProfile ..\XSD\GSDML-DeviceProfile-v2.25.xsd">
+	<ProfileHeader>
+		<ProfileIdentification>PROFINET Device Profile</ProfileIdentification>
+		<ProfileRevision>1.00</ProfileRevision>
+		<ProfileName>Device Profile for PROFINET Devices</ProfileName>
+		<ProfileSource>PROFIBUS Nutzerorganisation e. V. (PNO)</ProfileSource>
+		<ProfileClassID>Device</ProfileClassID>
+		<ISO15745Reference>
+			<ISO15745Part>4</ISO15745Part>
+			<ISO15745Edition>1</ISO15745Edition>
+			<ProfileTechnology>GSDML</ProfileTechnology>
+		</ISO15745Reference>
+	</ProfileHeader>
+	<ProfileBody>
+		<DeviceIdentity VendorID="0x01FF" DeviceID="0x0001">
+			<InfoText TextId="T_ID_DEV_DESCRIPTION"/>
+			<VendorName Value="Rocon"/>
+		</DeviceIdentity>
+		<DeviceFunction>
+			<Family MainFamily="I/O" ProductFamily="Deltapoint"/>
+		</DeviceFunction>
+		<ApplicationProcess>
+
+<!-- ============================================================================================ -->
+<!--   List of Device Access Points (DAP)                 									                      -->
+<!-- ============================================================================================ -->
+			<DeviceAccessPointList>
+				
+
+				<DeviceAccessPointItem ID="DAP V1.5" PhysicalSlots="0..16" ModuleIdentNumber="0x00000011" MinDeviceInterval="64" ImplementationType="NP30" DNS_CompatibleName="Rocon" ExtendedAddressAssignmentSupported="true" FixedInSlots="0" ObjectUUID_LocalIndex="1" DeviceAccessSupported="true">
+					<ModuleInfo CategoryRef="CAT_REF_MIGRATION_DAP">
+						<Name TextId="T_ID_DAP_V15"/>
+						<InfoText TextId="T_ID_V15_DEV_DESCRIPTION"/>
+						<VendorName Value="Universal Flow Monitors, Inc"/>
+						<OrderNumber Value="Rocon"/>
+						<HardwareRelease Value="V2"/>
+						<SoftwareRelease Value="V1.24"/>
+					</ModuleInfo>
+					<IOConfigData MaxInputLength="324" MaxOutputLength="324"/>
+					<UseableModules>
+					<!--References to the ModuleList-->
+						<ModuleItemRef ModuleItemTarget="ID_MODULE_OUTPUT1B" AllowedInSlots="1..16"/>
+						<ModuleItemRef ModuleItemTarget="ID_MODULE_INPUT1B" AllowedInSlots="1..16"/>
+					</UseableModules>
+					<VirtualSubmoduleList>
+						<VirtualSubmoduleItem ID="DAP V1.5" SubmoduleIdentNumber="0x00000001" API="0">
+							<IOData IOPS_Length="1" IOCS_Length="1" />
+							<RecordDataList/>
+							<ModuleInfo>
+								<Name TextId="T_ID_DAP_V15"/>
+								<InfoText TextId="T_ID_V15_DEV_DESCRIPTION"/>
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+				</DeviceAccessPointItem>
+
+			</DeviceAccessPointList>
+
+<!-- List of modules -->
+
+      <ModuleList>
+
+				<!--* Output 1 byte *-->
+				<ModuleItem ID="ID_MODULE_OUTPUT1B" ModuleIdentNumber="0x00000020">
+					<ModuleInfo CategoryRef="CAT_REF_MODULES">
+						<Name TextId="T_ID_MODULE_NAME_OUTPUT1B"/>
+						<InfoText TextId="T_ID_INFO_TEXT_OUTPUT1B"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>
+						<VirtualSubmoduleItem ID="ID_SUBMOD_OUTPUT1B" SubmoduleIdentNumber="0x00000000" API="0" FixedInSubslots="1">
+							<IOData IOPS_Length="1" IOCS_Length="1">
+								<Output Consistency="All items consistency">
+									<DataItem DataType="Unsigned8" TextId="T_ID_OUTPUT"/>
+								</Output>
+							</IOData>
+							<ModuleInfo>
+							<Name TextId="T_ID_SUBMOD_NAME_OUTPUT1B"/>
+							<InfoText TextId="T_ID_SUBMOD_INFO_OUTPUT1B"/>
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+				</ModuleItem>
+
+				<!--* Input 1 byte *-->
+				<ModuleItem ID="ID_MODULE_INPUT1B" ModuleIdentNumber="0x00000002">
+					<ModuleInfo CategoryRef="CAT_REF_MODULES">
+						<Name TextId="T_ID_MODULE_NAME_INPUT1B"/>
+						<InfoText TextId="T_ID_INFO_TEXT_INPUT1B"/>
+					</ModuleInfo>
+					<VirtualSubmoduleList>
+						<VirtualSubmoduleItem ID="ID_SUBMOD_INPUT1B" SubmoduleIdentNumber="0x00000000" API="0" FixedInSubslots="1">
+							<IOData IOPS_Length="1" IOCS_Length="1">
+								<Input Consistency="All items consistency">
+									<DataItem DataType="Unsigned8" TextId="T_ID_INPUT"/>
+								</Input>
+							</IOData>
+							<ModuleInfo>
+							<Name TextId="T_ID_SUBMOD_NAME_INPUT1B"/>
+							<InfoText TextId="T_ID_SUBMOD_INFO_INPUT1B"/>
+							</ModuleInfo>
+						</VirtualSubmoduleItem>
+					</VirtualSubmoduleList>
+				</ModuleItem>
+
+			</ModuleList>
+
+<!-- List of values -->
+
+
+<!-- List of categorys -->
+			<CategoryList>
+				<CategoryItem ID="CAT_REF_MODULES" TextId="T_ID_CAT_REF_MODULES"/>
+				<CategoryItem ID="CAT_REF_MIGRATION_DAP" TextId="T_ID_MIGRATION_DAP"/>
+			</CategoryList>
+
+<!-- List of texts -->
+			<ExternalTextList>
+
+				<PrimaryLanguage>
+					<!--Device Access Point information etc -->
+					<Text TextId="T_ID_DEV_DESCRIPTION" Value="Deltapoint Pnet"/>
+					<Text TextId="T_ID_V1_DEV_DESCRIPTION" Value="This Device Access Point may be used by IO Controllers that do not support extended PROFINET diagnostics. RT communication is supported"/>
+					<Text TextId="T_ID_V15_DEV_DESCRIPTION" Value="This Device Access Point may be used by IO Controllers that do not support extended PROFINET diagnostics. RT communication is supported"/>
+					<Text TextId="T_ID_V2_DEV_DESCRIPTION" Value="This Device Access Point supports RT communication"/>
+				  
+				  <Text TextId="T_ID_DAP_V15" Value="2-port Device"/>
+					<Text TextId="T_ID_SS_INTERFACE" Value="X1"/>
+					<Text TextId="T_ID_SS_PORT1" Value="P1"/>
+					<Text TextId="T_ID_SS_PORT2" Value="P2"/>
+					<Text TextId="T_ID_DAP_INTERFACE_MODULE" Value="Interface"/>
+					<Text TextId="T_ID_PORT" Value="Port 1"/>
+					<Text TextId="T_ID_PORT2" Value="Port 2"/>
+
+					<!--Module category-->
+					<Text TextId="T_ID_CAT_REF_MODULES" Value="Input/Output"/>
+					<Text TextId="T_ID_MIGRATION_DAP" Value="Migration" />
+
+					<!-- Vendor module texts -->
+					<Text TextId="T_ID_INPUT" Value="Input"/>
+					<Text TextId="T_ID_OUTPUT" Value="Output"/>
+
+					<Text TextId="T_ID_MODULE_NAME_OUTPUT1B" Value="Output 1 byte"/>
+					<Text TextId="T_ID_INFO_TEXT_OUTPUT1B" Value="Output 1 byte"/>
+					<Text TextId="T_ID_SUBMOD_NAME_OUTPUT1B" Value="Output 1 byte"/>
+					<Text TextId="T_ID_SUBMOD_INFO_OUTPUT1B" Value="Output 1 byte"/>
+
+ 
+
+					<Text TextId="T_ID_MODULE_NAME_INPUT1B" Value="Input 1 byte"/>
+					<Text TextId="T_ID_INFO_TEXT_INPUT1B" Value="Input 1 byte"/>
+					<Text TextId="T_ID_SUBMOD_NAME_INPUT1B" Value="Input 1 byte"/>
+					<Text TextId="T_ID_SUBMOD_INFO_INPUT1B" Value="Input 1 byte"/>
+
+					
+
+				</PrimaryLanguage>
+			</ExternalTextList>
+		</ApplicationProcess>
+	</ProfileBody>
+</ISO15745Profile>
