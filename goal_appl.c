@@ -20,7 +20,6 @@
 #include "ctc_net_ac.h"
 #include "ctc_net_rpc.h"
 #include "goal_http.h"
-#include "goal_appl_http.h"
 #include <goal_dd.h>
 
 /****************************************************************************/
@@ -353,12 +352,11 @@ GOAL_STATUS_T appl_setup(
         goal_logErr("Set IP failed");
         return res;
     }
-    
+
     /* setup web server */
     if (GOAL_RES_OK(res)) {
         res = appl_httpSetup();
     }
-
     /* configure stack to feature the GOAL_PNIO_CB_ID_NEW_IO_DATA callback */
     goal_pnioCfgNewIoDataCbSet(GOAL_TRUE);
 
