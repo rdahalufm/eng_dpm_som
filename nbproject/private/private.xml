@@ -3,12 +3,14 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/D:/UFM/DPM%20Projects/DPM_FP14.X/goal_appl.c</file>
+            <file>file:/D:/UFM/DPM%20Projects/DPM_FP14.X/goal_appl.h</file>
+            <file>file:/D:/UFM/DPM%20Projects/DPM_FP14.X/pic32/plat.c</file>
             <file>file:/D:/UFM/DPM%20Projects/UFM%20Library/DPM/includes/dpm_bsp.h</file>
             <file>file:/D:/UFM/DPM%20Projects/DPM_FP14.X/pic32/plat.h</file>
-            <file>file:/D:/UFM/DPM%20Projects/DPM_FP14.X/goal_appl.c</file>
-            <file>file:/D:/UFM/DPM%20Projects/DPM_FP14.X/pic32/plat.c</file>
             <file>file:/D:/UFM/DPM%20Projects/DPM_FP14.X/goal_config.h</file>
-            <file>file:/D:/UFM/DPM%20Projects/DPM_FP14.X/goal_appl.h</file>
+            <file>file:/D:/UFM/DPM%20Projects/DPM_FP14.X/rpc/goal_media/goal_ma_net.h</file>
+            <file>file:/D:/UFM/DPM%20Projects/DPM_FP14.X/main.c</file>
         </group>
     </open-files>
 </project-private>
