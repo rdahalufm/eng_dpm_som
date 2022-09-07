@@ -333,8 +333,8 @@ GOAL_STATUS_T appl_setup(
     }
 
     /* set IP address */
-    ip = GOAL_NET_IPV4(IPAddressLocal[0], IPAddressLocal[1], IPAddressLocal[2], IPAddressLocal[3]);
-    nm = GOAL_NET_IPV4(SMaskLocal[0], SMaskLocal[1], SMaskLocal[2], SMaskLocal[3]);
+    ip = GOAL_NET_IPV4(192, 168, 1, 45);
+    nm = GOAL_NET_IPV4(255, 255, 255, 0);
 //    gw = GOAL_NET_IPV4(IPAddressLocal[0], IPAddressLocal[1], IPAddressLocal[2], 1);
     
     res = goal_maNetIpSet(pMaNet, ip, nm, gw, GOAL_FALSE);
