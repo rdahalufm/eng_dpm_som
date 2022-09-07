@@ -20,6 +20,7 @@
 #include "ctc_net_ac.h"
 #include "ctc_net_rpc.h"
 #include "goal_http.h"
+#include "goal_appl_http.h"
 #include <goal_dd.h>
 
 /****************************************************************************/
@@ -117,6 +118,8 @@ GOAL_STATUS_T appl_init(
         goal_logErr("Initialization of DD failed");
     }
     
+    
+    
     res = goal_snmpInit();
     if (GOAL_RES_ERR(res)) {
         goal_logErr("Initialization of SNMP failed");
@@ -135,6 +138,14 @@ GOAL_STATUS_T appl_init(
     if (GOAL_RES_ERR(res)) {
         goal_logErr("Initialization of ccm RPC failed");
     }
+    
+    /* initialize HTTP module */
+    res = goal_httpInit();
+    if (GOAL_RES_ERR(res)) {
+        goal_logErr("Initialization of http module failed");
+        return res;
+    }
+    
     return res;
 }
 
@@ -341,6 +352,11 @@ GOAL_STATUS_T appl_setup(
     if (GOAL_RES_ERR(res)) {
         goal_logErr("Set IP failed");
         return res;
+    }
+    
+    /* setup web server */
+    if (GOAL_RES_OK(res)) {
+        res = appl_httpSetup();
     }
 
     /* configure stack to feature the GOAL_PNIO_CB_ID_NEW_IO_DATA callback */

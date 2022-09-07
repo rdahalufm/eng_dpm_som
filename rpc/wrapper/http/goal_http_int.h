@@ -120,8 +120,8 @@ GOAL_HTTP_NAME(   GOAL_HTTP_CONTENT_CSS,           11,         "\r\nContent-type
 GOAL_HTTP_NAME(   GOAL_HTTP_CONTENT_SWF,           12,         "\r\nContent-type: application/x-shockwave-flash"), \
 GOAL_HTTP_NAME(   GOAL_HTTP_CONTENT_XML,           13,         "\r\nContent-type: text/xml"),                      \
 GOAL_HTTP_NAME(   GOAL_HTTP_CONTENT_PDF,           14,         "\r\nContent-type: application/pdf"),               \
-GOAL_HTTP_NAME(   GOAL_HTTP_CONTENT_DEFAULT_TYPE,  15,         "\r\nContent-type: text/plain")                     \
-
+GOAL_HTTP_NAME(   GOAL_HTTP_CONTENT_DEFAULT_TYPE,  15,         "\r\nContent-type: text/plain"),                     \
+GOAL_HTTP_NAME(   GOAL_HTTP_CONTENT_JSON,          16,         "\r\nContent-type: application/json")                \
 
 #define GOAL_HTTP_METHOD                                                        \
                 /*  id,                         nr,         methode string */   \

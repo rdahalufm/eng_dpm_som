@@ -239,6 +239,15 @@ typedef GOAL_STATUS_T (*GOAL_HTTP_TMPCB_T) (GOAL_HTTP_APPLCB_TEMPL_T *);
         if (x->pRet){*(x->pRet) = GOAL_HTTP_STATUS_FORBID_11;} \
     }
 
+#define GOAL_HTTP_GET_RETURN_JSON(x, y, z) \
+    if ((NULL == x) || (NULL == y)) { \
+        goal_targetHalt(); \
+    } else { \
+        *(x->sc.pLenData) = (uint32_t) z; \
+        *(x->sc.ppData) = (const uint8_t *) y; \
+        *(x->sc.pContType) = GOAL_HTTP_CONTENT_JSON; \
+        *(x->pRet) = GOAL_HTTP_STATUS_OK_11; \
+    }
 
 /****************************************************************************/
 /* Prototypes */

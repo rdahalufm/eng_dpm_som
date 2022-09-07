@@ -19,22 +19,26 @@
 #define CONFIG_UGOAL_LOGGING_DBG    0
 #define CONFIG_UGOAL_LOGGING 1
 /* this example does not use the cyclic channel of mctc */
-#define CONFIG_UGOAL_DATAMAPPER 1
+//#define CONFIG_UGOAL_DATAMAPPER 1
 #define CONFIG_UGOAL_HEAP_BUFFER_ALIGNMENT  4
-/* record data maximum length
- *
- * the maximum length supported by the profinet stack is 1116
- */
-#define RECORD_DATA_LENGTH  256
+///* record data maximum length
+// *
+// * the maximum length supported by the profinet stack is 1116
+// */
+//#define RECORD_DATA_LENGTH  256
+/* increase RPC buffer to transport EIP IO data */
+#define CONFIG_UGOAL_RPC_RB_SIZE                1024
+#define CONFIG_UGOAL_RPC_RB_ENTRIES             2
 
-/* size of ring buffer entries (default 274)
- *
- * To allow transportation of RECORD_DATA_LENGTH bytes record data this
- * size needs to be increased
- */
-#if RECORD_DATA_LENGTH + DEFAULT_UGOAL_RPC_RB_OVERHEAD > DEFAULT_UGOAL_RPC_RB_SIZE
-# define CONFIG_UGOAL_RPC_RB_SIZE (RECORD_DATA_LENGTH + DEFAULT_UGOAL_RPC_RB_OVERHEAD)
-#endif
+
+///* size of ring buffer entries (default 274)
+// *
+// * To allow transportation of RECORD_DATA_LENGTH bytes record data this
+// * size needs to be increased
+// */
+//#if RECORD_DATA_LENGTH + DEFAULT_UGOAL_RPC_RB_OVERHEAD > DEFAULT_UGOAL_RPC_RB_SIZE
+//# define CONFIG_UGOAL_RPC_RB_SIZE (RECORD_DATA_LENGTH + DEFAULT_UGOAL_RPC_RB_OVERHEAD)
+//#endif
 
 /* number of RPC handles (default 2)
  *

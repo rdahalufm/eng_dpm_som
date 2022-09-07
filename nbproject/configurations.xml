@@ -64,6 +64,11 @@
         </logicalFolder>
         <itemPath>dpm_config.h</itemPath>
       </logicalFolder>
+      <logicalFolder name="f1" displayName="http" projectFiles="true">
+        <itemPath>goal_appl_http.c</itemPath>
+        <itemPath>goal_appl_http.h</itemPath>
+        <itemPath>webpage_html.c</itemPath>
+      </logicalFolder>
       <logicalFolder name="pic32" displayName="pic32" projectFiles="true">
         <itemPath>pic32/plat.c</itemPath>
       </logicalFolder>

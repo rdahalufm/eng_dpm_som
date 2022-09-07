@@ -49,6 +49,9 @@ UINT32 SerialNumber = 0xFFFFFFFF;
 volatile UINT8 IPAddressLocal[4],SMaskLocal[4],MACAddress[6];
 #endif
 
+void clear_wdt() {
+    CLEAR_WATCHDOG();
+}
 
 void _mon_putc(char data){
     while(!UARTTransmitterIsReady(UART2)){}
