@@ -1,4 +1,4 @@
 [submodule "/"]
 	path = /
-	url = https://github.com/rdahalufm/eng_dpm_core
+	url = https://github.com/rdahalufm/eng_dpm_core.git
 	branch = main
