@@ -1,0 +1,3 @@
+[submodule "eng_dpm_som"]
+	path = eng_dpm_som
+	url = https://github.com/rdahalufm/eng_dpm_som.git
