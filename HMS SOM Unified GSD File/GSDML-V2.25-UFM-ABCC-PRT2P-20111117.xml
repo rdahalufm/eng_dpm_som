@@ -124,7 +124,7 @@
 					<Text TextId="T_ID_V15_DEV_DESCRIPTION" Value="This Device Access Point may be used by IO Controllers that do not support extended PROFINET diagnostics. RT communication is supported"/>
 					<Text TextId="T_ID_V2_DEV_DESCRIPTION" Value="This Device Access Point supports RT communication"/>
 				  
-				  <Text TextId="T_ID_DAP_V15" Value="2-port Device"/>
+				   <Text TextId="T_ID_DAP_V15" Value="Rocon 2-port Device"/>
 					<Text TextId="T_ID_SS_INTERFACE" Value="X1"/>
 					<Text TextId="T_ID_SS_PORT1" Value="P1"/>
 					<Text TextId="T_ID_SS_PORT2" Value="P2"/>
