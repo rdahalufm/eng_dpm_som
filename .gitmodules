@@ -1,4 +1,4 @@
-[submodule "ext"]
-	path = ext
+[submodule "ext/DPMLib"]
+	path = ext/DPMLib
 	url = https://github.com/rdahalufm/eng_dpm_core.git
 	branch = main
